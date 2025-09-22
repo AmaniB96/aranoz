@@ -14,11 +14,11 @@ class BlogCategorySeeder extends Seeder
     public function run(): void
     {
         BlogCategory::insert([
-            ['nom' => 'Travel'],
-            ['nom' => 'Health Care'],
-            ['nom' => 'Discover'],
-            ['nom' => 'Fashion'],
-            ['nom' => 'Business'],
+            ['name' => 'Travel'],
+            ['name' => 'Health Care'],
+            ['name' => 'Discover'],
+            ['name' => 'Fashion'],
+            ['name' => 'Business'],
         ]);
     }
 }

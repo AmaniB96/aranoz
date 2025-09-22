@@ -14,17 +14,17 @@ class ProductCategorySeeder extends Seeder
     public function run(): void
     {
         ProductCategory::insert([
-            ['nom' => 'Chaises'],
-            ['nom' => 'Buffets'],
-            ['nom' => 'Vaisseliers'],
-            ['nom' => 'Étagères'],
-            ['nom' => 'Bibliothèques'],
-            ['nom' => 'Canapés'],
-            ['nom' => 'Fauteuils'],
-            ['nom' => 'Méridiennes'],
-            ['nom' => 'Bureaux'],
-            ['nom' => 'Lits'],
-            ['nom' => 'Armoires'],
+            ['name' => 'Chaises'],
+            ['name' => 'Buffets'],
+            ['name' => 'Vaisseliers'],
+            ['name' => 'Étagères'],
+            ['name' => 'Bibliothèques'],
+            ['name' => 'Canapés'],
+            ['name' => 'Fauteuils'],
+            ['name' => 'Méridiennes'],
+            ['name' => 'Bureaux'],
+            ['name' => 'Lits'],
+            ['name' => 'Armoires'],
         ]);
     }
 }

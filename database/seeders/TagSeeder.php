@@ -14,19 +14,19 @@ class TagSeeder extends Seeder
    public function run(): void
     {
         Tag::insert([
-            ['nom' => 'Lifestyle'],
-            ['nom' => 'Housing'],
-            ['nom' => 'Technologie'],
-            ['nom' => 'Food'],
-            ['nom' => 'Recipes'],
-            ['nom' => 'Education'],
-            ['nom' => 'Cinema'],
-            ['nom' => 'News'],
-            ['nom' => 'Politics'],
-            ['nom' => 'Religion'],
-            ['nom' => 'Science'],
-            ['nom' => 'World'],
-            ['nom' => 'Hobbies'],
+            ['name' => 'Lifestyle'],
+            ['name' => 'Housing'],
+            ['name' => 'Technologie'],
+            ['name' => 'Food'],
+            ['name' => 'Recipes'],
+            ['name' => 'Education'],
+            ['name' => 'Cinema'],
+            ['name' => 'News'],
+            ['name' => 'Politics'],
+            ['name' => 'Religion'],
+            ['name' => 'Science'],
+            ['name' => 'World'],
+            ['name' => 'Hobbies'],
         ]);
     }
 }
