@@ -16,7 +16,7 @@ class TagSeeder extends Seeder
         Tag::insert([
             ['name' => 'Lifestyle'],
             ['name' => 'Housing'],
-            ['name' => 'Technologie'],
+            ['name' => 'Technology'],
             ['name' => 'Food'],
             ['name' => 'Recipes'],
             ['name' => 'Education'],
