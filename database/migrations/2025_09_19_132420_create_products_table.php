@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('products', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->integer('price');
+            $table->decimal('price', 8, 2);
             $table->string('description');
             $table->foreignId('product_category_id')->constrained('product_categories')->nullOnDelete();
             $table->integer('stock');
@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('image_right');
             $table->string('image_bonus');
             $table->boolean('isPinned');
+            $table->foreignId('color_id')->constrained('colors')->nullOnDelete();
             $table->foreignId('promo_id')->nullable();
             $table->timestamps();
         });
