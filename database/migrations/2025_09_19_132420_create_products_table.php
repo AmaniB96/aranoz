@@ -16,14 +16,15 @@ return new class extends Migration
             $table->string('name');
             $table->decimal('price', 8, 2);
             $table->string('description');
-            $table->foreignId('product_category_id')->constrained('product_categories')->nullOnDelete();
+            $table->foreignId('product_category_id')->nullable()->constrained('product_categories')->nullOnDelete();
             $table->integer('stock');
             $table->string('image_front');
             $table->string('image_left');
             $table->string('image_right');
             $table->string('image_bonus');
             $table->boolean('isPinned');
-            $table->foreignId('color_id')->constrained('colors')->nullOnDelete();
+            $table->boolean('available')->default(true);
+            $table->foreignId('color_id')->nullable()->constrained('colors')->nullOnDelete();
             $table->foreignId('promo_id')->nullable();
             $table->timestamps();
         });

@@ -19,7 +19,7 @@ return new class extends Migration
             $table->integer('number');
             $table->integer('zip');
             $table->string('country');
-            $table->foreignId('user_id')->constrained('users')->nullOnDelete();
+            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
     }

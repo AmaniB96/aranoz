@@ -7,19 +7,16 @@ use Illuminate\Database\Eloquent\Model;
 
 class Adress extends Model
 {
-     use HasFactory;
+    use HasFactory;
 
     protected $fillable = [
         'user_id',
-        'first_name',
-        'last_name',
-        'company_name',
-        'address',
+        'street',
+        'state',
         'city',
-        'district',
-        'postcode',
-        'phone',
-        'email'
+        'number',
+        'zip',
+        'country'
     ];
 
     public function user()

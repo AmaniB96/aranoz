@@ -13,12 +13,13 @@ class RoleSeeder extends Seeder
      */
     public function run(): void
     {
-        Role::insert(
+        Role::insert([
             ['name' => 'admin'],
             ['name' => 'modo'],
             ['name' => 'user'],
             ['name' => 'webmaster'],
             ['name' => 'cm'],
+        ]  
         );
     }
 }

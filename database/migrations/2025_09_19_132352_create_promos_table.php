@@ -14,7 +14,8 @@ return new class extends Migration
         Schema::create('promos', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->integer('promo');
+            $table->decimal('discount', 8, 2); // remplace 'promo' par 'discount'
+            $table->boolean('active')->default(false);
             $table->timestamps();
         });
     }

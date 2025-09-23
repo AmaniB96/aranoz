@@ -49,23 +49,28 @@ class User extends Authenticatable
         ];
     }
 
-    public function role(){
-        $this->belongsTo(Role::class);
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
     }
 
-    public function adresses() {
-        $this->hasOne(Adress::class);
+    public function adresses()
+    {
+        return $this->hasOne(Adress::class);
     }
 
-    public function carts() {
-        $this->hasMany(Cart::class);
+    public function carts()
+    {
+        return $this->hasMany(Cart::class);
     }
 
-    public function blogs(){
+    public function blogs()
+    {
         return $this->hasMany(Blog::class);
     }
 
-    public function blog_comments(){
+    public function blogComments()
+    {
         return $this->hasMany(BlogComment::class);
     }
 
