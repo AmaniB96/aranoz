@@ -31,6 +31,7 @@ class DatabaseSeeder extends Seeder
             CartProductSeeder::class,    // Produits paniers (dépend de carts, products)
             OrderSeeder::class,          // Commandes (dépend de carts)
             MailSeeder::class,           // Mails (si nécessaire)
+            ContactSeeder::class
         ]);
     }
 }

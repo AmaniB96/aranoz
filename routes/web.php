@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CategoriesController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\WelcomeController;
 use Illuminate\Foundation\Application;
@@ -22,5 +23,8 @@ Route::middleware('auth')->group(function () {
 Route::get('/admin/categories', [CategoriesController::class, 'index'])->name('categories');
 Route::post('/admin/categories', [CategoriesController::class, 'create'])->name('createCat');
 Route::delete('/admin/categories/{id}', [CategoriesController::class, 'destroy'])->name('deleteCat');
+
+Route::get('/admin/contact', [ContactController::class, 'index'])->name('contact');
+Route::put('/admin/contact/{id}', [ContactController::class, 'update'])->name('contactUpdate');
 
 require __DIR__.'/auth.php';
