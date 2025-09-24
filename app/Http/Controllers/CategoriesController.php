@@ -15,7 +15,7 @@ class CategoriesController extends Controller
         $productCat = ProductCategory::all();
         $blogCat = BlogCategory::all();
         $tags = Tag::all();
-        return Inertia::render("Admin/Categories", [
+        return Inertia::render("Admin/categories/Categories", [
             'productCat' => $productCat,
             'blogCat' => $blogCat,
             'tags' => $tags
