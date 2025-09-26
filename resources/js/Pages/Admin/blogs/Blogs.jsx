@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { router, Link } from '@inertiajs/react';
 import './blogs.css';
+import NavAdmin from '../components/NavAdmin';
+import AdminHeader from '../components/AdminHeader';
 
 export default function Blogs({ blogs, flash }) {
     const [successMessage, setSuccessMessage] = useState('');
@@ -27,6 +29,10 @@ export default function Blogs({ blogs, flash }) {
     };
 
     return (
+        <>
+            <NavAdmin/>
+            <AdminHeader title="Blogs"/>
+        
         <div className="blogs-container">
             <div className="blogs-header">
                 <h1 className="blogs-title">Blog Management</h1>
@@ -80,5 +86,6 @@ export default function Blogs({ blogs, flash }) {
                 </table>
             </div>
         </div>
+        </>
     );
 }

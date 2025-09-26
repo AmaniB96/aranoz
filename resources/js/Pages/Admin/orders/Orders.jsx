@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { router } from '@inertiajs/react';
 import './orders.css';
+import NavAdmin from '../components/NavAdmin';
+import AdminHeader from '../components/AdminHeader';
 
 export default function Orders({ orders, flash }) {
     const [successMessage, setSuccessMessage] = useState('');
@@ -28,6 +30,11 @@ export default function Orders({ orders, flash }) {
     };
 
     return (
+
+        <>
+            <NavAdmin/>
+            <AdminHeader title="Orders"/>
+       
         <div className="orders-container">
             <h1 className="orders-title">Order Management</h1>
             
@@ -79,5 +86,6 @@ export default function Orders({ orders, flash }) {
                 </table>
             </div>
         </div>
+         </>
     );
 }

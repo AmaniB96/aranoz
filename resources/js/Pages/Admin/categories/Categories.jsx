@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useForm, router } from '@inertiajs/react';
 
 import './categories.css';
+import NavAdmin from '../components/NavAdmin';
+import AdminHeader from '../components/AdminHeader';
 
 export default function Categories({ productCat, blogCat, tags, flash }) {
     const [successMessage, setSuccessMessage] = useState('');
@@ -43,6 +45,10 @@ export default function Categories({ productCat, blogCat, tags, flash }) {
     };
 
     return (
+        <>
+            <NavAdmin/>
+            <AdminHeader title="Categories"/>
+     
         <div className="categories-container">
             <h1 className="categories-title">Gestion des Catégories</h1>
             
@@ -121,5 +127,6 @@ export default function Categories({ productCat, blogCat, tags, flash }) {
                 {tagForm.errors.name && <p className="error-message">{tagForm.errors.name}</p>}
             </div>
         </div>
+           </>
     );
 }

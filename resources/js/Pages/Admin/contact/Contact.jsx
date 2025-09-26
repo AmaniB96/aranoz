@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useForm } from '@inertiajs/react';
 import './contact.css';
+import NavAdmin from '../components/NavAdmin';
+import AdminHeader from '../components/AdminHeader';
 
 export default function Contact({ contact, flash }) {
   const { data, setData, put, processing, errors } = useForm({
@@ -38,6 +40,10 @@ export default function Contact({ contact, flash }) {
   };
 
   return (
+    <>
+        <NavAdmin/>
+        <AdminHeader title="Contact"/>
+
     <div className="contact-page">
       <div className="map-wrap">
         <iframe
@@ -178,5 +184,6 @@ export default function Contact({ contact, flash }) {
         </aside>
       </div>
     </div>
+    </>
   );
 }

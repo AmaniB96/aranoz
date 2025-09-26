@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { router, Link } from '@inertiajs/react';
 import './product.css';
+import NavAdmin from '../components/NavAdmin';
+import AdminHeader from '../components/AdminHeader';
 
 export default function Product({ products, flash }) {
     const [successMessage, setSuccessMessage] = useState('');
@@ -38,6 +40,10 @@ export default function Product({ products, flash }) {
     };
 
     return (
+        <>
+            <NavAdmin/>
+            <AdminHeader title="Products"/>
+        
         <div className="products-container">
             <div className="products-header">
                 <h1 className="products-title">Product Management</h1>
@@ -113,5 +119,6 @@ export default function Product({ products, flash }) {
                 </table>
             </div>
         </div>
+        </>
     );
 }

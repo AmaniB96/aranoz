@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { router, useForm } from '@inertiajs/react';
 import './user.css';
+import NavAdmin from '../components/NavAdmin';
+import AdminHeader from '../components/AdminHeader';
 
 export default function User({ users, roles, flash }) {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -51,6 +53,11 @@ export default function User({ users, roles, flash }) {
     };
 
     return (
+
+        <>
+        <NavAdmin/>
+        <AdminHeader title="Users"/>
+                
         <div className="users-container">
             <h1 className="users-title">Gestion des Utilisateurs</h1>
             
@@ -134,5 +141,6 @@ export default function User({ users, roles, flash }) {
                 </div>
             )}
         </div>
+          </>
     );
 }

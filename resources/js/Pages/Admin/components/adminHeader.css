@@ -1,0 +1,140 @@
+.admin-header {
+    background: linear-gradient(135deg, #ffeef5 0%, #f5d0e0 100%);
+    border-radius: 0 0 20px 20px;
+    margin-bottom: 30px;
+    overflow: hidden;
+    position: relative;
+}
+
+.admin-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 60px 80px 40px;
+    position: relative;
+}
+
+.admin-header-text {
+    flex: 1;
+    max-width: 50%;
+}
+
+.admin-header-title {
+    font-size: 48px;
+    font-weight: 700;
+    color: #333;
+    margin: 0 0 10px 0;
+    line-height: 1.2;
+}
+
+.admin-header-subtitle {
+    font-size: 18px;
+    color: #666;
+    margin: 0;
+    font-weight: 400;
+}
+
+.admin-header-image {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    max-width: 50%;
+}
+
+.header-decoration-image {
+    max-width: 300px;
+    max-height: 250px;
+    object-fit: contain;
+    filter: drop-shadow(0 10px 20px rgba(0,0,0,0.1));
+}
+
+.admin-header-actions {
+    padding: 0 80px 30px;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .admin-header-content {
+        padding: 40px 50px 30px;
+    }
+    
+    .admin-header-title {
+        font-size: 40px;
+    }
+    
+    .admin-header-subtitle {
+        font-size: 16px;
+    }
+    
+    .header-decoration-image {
+        max-width: 250px;
+        max-height: 200px;
+    }
+    
+    .admin-header-actions {
+        padding: 0 50px 25px;
+    }
+}
+
+@media (max-width: 768px) {
+    .admin-header-content {
+        flex-direction: column;
+        text-align: center;
+        padding: 30px 30px 20px;
+    }
+    
+    .admin-header-text,
+    .admin-header-image {
+        max-width: 100%;
+    }
+    
+    .admin-header-text {
+        margin-bottom: 20px;
+    }
+    
+    .admin-header-title {
+        font-size: 32px;
+    }
+    
+    .admin-header-subtitle {
+        font-size: 14px;
+    }
+    
+    .header-decoration-image {
+        max-width: 200px;
+        max-height: 150px;
+    }
+    
+    .admin-header-actions {
+        padding: 0 30px 20px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 480px) {
+    .admin-header-content {
+        padding: 20px 20px 15px;
+    }
+    
+    .admin-header-title {
+        font-size: 28px;
+    }
+    
+    .admin-header-subtitle {
+        font-size: 12px;
+    }
+    
+    .header-decoration-image {
+        max-width: 150px;
+        max-height: 120px;
+    }
+    
+    .admin-header-actions {
+        padding: 0 20px 15px;
+    }
+}
