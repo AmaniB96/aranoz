@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WelcomeController;
@@ -31,5 +32,9 @@ Route::put('/admin/contact/{id}', [ContactController::class, 'update'])->name('c
 Route::get('/admin/user', [UserController::class, 'index'])->name('user');
 Route::put('/admin/user/{id}', [UserController::class, 'update'])->name('userUpdate');
 Route::delete('/admin/user/{id}',[UserController::class, 'destroy'])->name('userDelete');
+
+
+Route::get('/admin/orders', [OrderController::class, 'index'])->name('orders');
+Route::put('/admin/orders/{id}', [OrderController::class, 'update'])->name('ordersUpdate');
 
 require __DIR__.'/auth.php';
