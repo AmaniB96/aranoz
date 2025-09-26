@@ -11,7 +11,7 @@ export default function AdminHeader({ title, subtitle = "Aranoz - Shop system", 
                 </div>
                 <div className="admin-header-image">
                     <img 
-                        src="/storage/products/chair-teal.jpg" 
+                        src="/storage/products/carousel/feature_1.png" 
                         alt="Admin header decoration" 
                         className="header-decoration-image"
                     />
