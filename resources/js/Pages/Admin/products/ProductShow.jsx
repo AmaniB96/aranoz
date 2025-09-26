@@ -3,6 +3,17 @@ import { Link } from '@inertiajs/react';
 import './productShow.css';
 
 export default function ProductShow({ product, flash }) {
+    const getImageUrl = (imageName, size) => {
+        if (!imageName) return null;
+        
+        // If it's already a URL, return as-is
+        if (imageName.startsWith('http://') || imageName.startsWith('https://')) {
+            return imageName;
+        }
+        
+        return `/storage/products/${size}/${imageName}`;
+    };
+
     return (
         <div className="product-show-container">
             <div className="product-show-header">
@@ -72,26 +83,26 @@ export default function ProductShow({ product, flash }) {
                         <div className="images-grid">
                             {product.image_front && (
                                 <div className="image-item">
-                                    <h3>Front</h3>
-                                    <img src={`/storage/${product.image_front}`} alt="Front view" />
+                                    <h3>Front (Show)</h3>
+                                    <img src={getImageUrl(product.image_front, 'show')} alt="Front view" />
                                 </div>
                             )}
                             {product.image_left && (
                                 <div className="image-item">
-                                    <h3>Left</h3>
-                                    <img src={`/storage/${product.image_left}`} alt="Left view" />
+                                    <h3>Left (Carousel)</h3>
+                                    <img src={getImageUrl(product.image_left, 'carousel')} alt="Left view" />
                                 </div>
                             )}
                             {product.image_right && (
                                 <div className="image-item">
-                                    <h3>Right</h3>
-                                    <img src={`/storage/${product.image_right}`} alt="Right view" />
+                                    <h3>Right (Card)</h3>
+                                    <img src={getImageUrl(product.image_right, 'card')} alt="Right view" />
                                 </div>
                             )}
                             {product.image_bonus && (
                                 <div className="image-item">
-                                    <h3>Bonus</h3>
-                                    <img src={`/storage/${product.image_bonus}`} alt="Bonus view" />
+                                    <h3>Bonus (Panier)</h3>
+                                    <img src={getImageUrl(product.image_bonus, 'panier')} alt="Bonus view" />
                                 </div>
                             )}
                         </div>

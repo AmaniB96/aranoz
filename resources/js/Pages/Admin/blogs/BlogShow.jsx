@@ -33,7 +33,7 @@ export default function BlogShow({ blog, flash }) {
 
                 {blog.image && (
                     <div className="blog-image">
-                        <img src={`/storage/${blog.image}`} alt={blog.title} />
+                        <img src={`/storage/blogs/${blog.image}`} alt={blog.title} />
                     </div>
                 )}
 

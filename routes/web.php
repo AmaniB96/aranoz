@@ -7,6 +7,8 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\MailController;
+use App\Http\Controllers\WelcomeController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -53,5 +55,13 @@ Route::get('/admin/products/{id}', [ProductController::class, 'show'])->name('pr
 Route::get('/admin/products/{id}/edit', [ProductController::class, 'edit'])->name('products.edit');
 Route::put('/admin/products/{id}', [ProductController::class, 'update'])->name('products.update');
 Route::delete('/admin/products/{id}', [ProductController::class, 'destroy'])->name('products.destroy');
+
+Route::get('/admin/mailbox', [MailController::class, 'index'])->name('mailbox.index');
+Route::get('/admin/mailbox/archived', [MailController::class, 'archived'])->name('mailbox.archived');
+Route::get('/admin/mailbox/{id}', [MailController::class, 'show'])->name('mailbox.show');
+Route::put('/admin/mailbox/{id}/archive', [MailController::class, 'archive'])->name('mailbox.archive');
+Route::put('/admin/mailbox/{id}/unarchive', [MailController::class, 'unarchive'])->name('mailbox.unarchive');
+Route::post('/admin/mailbox/{id}/reply', [MailController::class, 'reply'])->name('mailbox.reply');
+Route::delete('/admin/mailbox/{id}', [MailController::class, 'destroy'])->name('mailbox.destroy');
 
 require __DIR__.'/auth.php';

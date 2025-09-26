@@ -199,58 +199,87 @@ export default function ProductEdit({ product, categories, colors, promos, flash
 
                 <div className="form-section">
                     <h2>Images</h2>
-                    <div className="form-grid">
-                        <div className="form-group">
-                            <label htmlFor="image_front">Front Image URL</label>
-                            <input
-                                type="text"
-                                id="image_front"
-                                value={data.image_front}
-                                onChange={(e) => setData('image_front', e.target.value)}
-                                placeholder="e.g., product/image.jpg"
-                                className={errors.image_front ? 'error' : ''}
-                            />
-                            {errors.image_front && <span className="error-message">{errors.image_front}</span>}
-                        </div>
+                    <div className="images-section">
+                        {[
+                            { key: 'front', label: 'Front Image' },
+                            { key: 'left', label: 'Left Image' },
+                            { key: 'right', label: 'Right Image' },
+                            { key: 'bonus', label: 'Bonus Image' }
+                        ].map(({ key, label }) => (
+                            <div key={key} className="image-input-group">
+                                <h3>{label}</h3>
+                                <div className="image-input-options">
+                                    <label className="input-option">
+                                        <input
+                                            type="radio"
+                                            name={`image_${key}_type`}
+                                            value="upload"
+                                            defaultChecked={!data[`image_${key}`] || !data[`image_${key}`].startsWith('http')}
+                                            onChange={() => setData(`image_${key}_url`, '')}
+                                        />
+                                        Upload File
+                                    </label>
+                                    <label className="input-option">
+                                        <input
+                                            type="radio"
+                                            name={`image_${key}_type`}
+                                            value="url"
+                                            defaultChecked={data[`image_${key}`] && data[`image_${key}`].startsWith('http')}
+                                            onChange={() => setData(`image_${key}`, null)}
+                                        />
+                                        Image URL
+                                    </label>
+                                </div>
 
-                        <div className="form-group">
-                            <label htmlFor="image_left">Left Image URL</label>
-                            <input
-                                type="text"
-                                id="image_left"
-                                value={data.image_left}
-                                onChange={(e) => setData('image_left', e.target.value)}
-                                placeholder="e.g., product/image.jpg"
-                                className={errors.image_left ? 'error' : ''}
-                            />
-                            {errors.image_left && <span className="error-message">{errors.image_left}</span>}
-                        </div>
+                                <div className="image-input-fields">
+                                    <input
+                                        type="file"
+                                        name={`image_${key}`}
+                                        accept="image/*"
+                                        onChange={(e) => {
+                                            const file = e.target.files[0];
+                                            if (file) {
+                                                // Create a synthetic event for useForm
+                                                const syntheticEvent = {
+                                                    target: {
+                                                        name: `image_${key}`,
+                                                        value: file
+                                                    }
+                                                };
+                                                // We need to handle file inputs differently
+                                                setData(`image_${key}`, file);
+                                                setData(`image_${key}_url`, '');
+                                            }
+                                        }}
+                                        className={errors[`image_${key}`] ? 'error' : ''}
+                                        style={{ display: 'none' }}
+                                        id={`file_${key}`}
+                                    />
+                                    <label htmlFor={`file_${key}`} className="file-upload-btn">
+                                        Choose File
+                                    </label>
+                                    <span className="file-name">
+                                        {data[`image_${key}`] && data[`image_${key}`].name ? data[`image_${key}`].name : 'No file chosen'}
+                                    </span>
 
-                        <div className="form-group">
-                            <label htmlFor="image_right">Right Image URL</label>
-                            <input
-                                type="text"
-                                id="image_right"
-                                value={data.image_right}
-                                onChange={(e) => setData('image_right', e.target.value)}
-                                placeholder="e.g., product/image.jpg"
-                                className={errors.image_right ? 'error' : ''}
-                            />
-                            {errors.image_right && <span className="error-message">{errors.image_right}</span>}
-                        </div>
-
-                        <div className="form-group">
-                            <label htmlFor="image_bonus">Bonus Image URL</label>
-                            <input
-                                type="text"
-                                id="image_bonus"
-                                value={data.image_bonus}
-                                onChange={(e) => setData('image_bonus', e.target.value)}
-                                placeholder="e.g., product/image.jpg"
-                                className={errors.image_bonus ? 'error' : ''}
-                            />
-                            {errors.image_bonus && <span className="error-message">{errors.image_bonus}</span>}
-                        </div>
+                                    <div className="url-input-group">
+                                        <label>Or enter URL:</label>
+                                        <input
+                                            type="url"
+                                            value={data[`image_${key}_url`] || ''}
+                                            onChange={(e) => {
+                                                setData(`image_${key}_url`, e.target.value);
+                                                setData(`image_${key}`, null);
+                                            }}
+                                            placeholder="https://example.com/image.jpg"
+                                            className={errors[`image_${key}_url`] ? 'error' : ''}
+                                        />
+                                    </div>
+                                </div>
+                                {errors[`image_${key}`] && <span className="error-message">{errors[`image_${key}`]}</span>}
+                                {errors[`image_${key}_url`] && <span className="error-message">{errors[`image_${key}_url`]}</span>}
+                            </div>
+                        ))}
                     </div>
                 </div>
 

@@ -6,6 +6,17 @@ export default function Product({ products, flash }) {
     const [successMessage, setSuccessMessage] = useState('');
     const [deletingProductId, setDeletingProductId] = useState(null);
 
+    const getImageUrl = (imageName, size) => {
+        if (!imageName) return null;
+        
+        // If it's already a URL, return as-is
+        if (imageName.startsWith('http://') || imageName.startsWith('https://')) {
+            return imageName;
+        }
+        
+        return `/storage/products/${size}/${imageName}`;
+    };
+
     const handleDelete = (productId) => {
         if (confirm('Are you sure you want to delete this product?')) {
             setDeletingProductId(productId);
@@ -45,6 +56,7 @@ export default function Product({ products, flash }) {
                 <table>
                     <thead>
                         <tr>
+                            <th>Image</th>
                             <th>Name</th>
                             <th>Category</th>
                             <th>Price</th>
@@ -57,6 +69,15 @@ export default function Product({ products, flash }) {
                     <tbody>
                         {products.map((product) => (
                             <tr key={product.id}>
+                                <td>
+                                    {product.image_front && (
+                                        <img 
+                                            src={getImageUrl(product.image_front, 'card')} 
+                                            alt={product.name} 
+                                            className="product-thumbnail"
+                                        />
+                                    )}
+                                </td>
                                 <td>{product.name}</td>
                                 <td>{product.product_category?.name || 'N/A'}</td>
                                 <td>${product.price}</td>

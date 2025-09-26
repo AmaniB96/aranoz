@@ -12,6 +12,11 @@ class Mail extends Model
     protected $fillable = [
         'name',
         'title',
-        'message'
+        'message',
+        'archived'
+    ];
+
+    protected $casts = [
+        'archived' => 'boolean'
     ];
 }
