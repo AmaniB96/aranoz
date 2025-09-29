@@ -1,5 +1,5 @@
 .carousel-container {
-    min-height: 100vh;
+    min-height: 85vh;
     background: linear-gradient(135deg, #e8f5ff 0%, #b8e0ff 100%);
     position: relative;
     overflow: hidden;
@@ -66,11 +66,15 @@
 }
 
 .carousel-controls {
+    position: absolute;
+    bottom: 0;
+    right: 40px;
     display: flex;
     align-items: center;
     gap: 20px;
     align-self: flex-end;
     background-color: white;
+    padding: 30px 70px;
 }
 
 .carousel-btn {
