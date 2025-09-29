@@ -78,4 +78,34 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Product::class, 'liked_products')->withTimestamps();
     }
+
+    public function hasRole($roleName)
+    {
+        return $this->role && $this->role->name === $roleName;
+    }
+
+    public function hasAnyRole($roles)
+    {
+        return $this->role && in_array($this->role->name, $roles);
+    }
+
+    public function isAdmin()
+    {
+        return $this->hasRole('admin');
+    }
+
+    public function isWebmaster()
+    {
+        return $this->hasRole('webmaster');
+    }
+
+    public function isAgent()
+    {
+        return $this->hasRole('agent');
+    }
+
+    public function isCM()
+    {
+        return $this->hasRole('cm');
+    }
 }

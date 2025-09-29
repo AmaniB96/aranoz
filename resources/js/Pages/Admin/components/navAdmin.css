@@ -95,9 +95,29 @@
     color: #007bff;
 }
 
+/* User Menu Styles */
 .admin-user-menu {
     display: flex;
     align-items: center;
+}
+
+.user-avatar-container {
+    position: relative;
+    cursor: pointer;
+}
+
+.user-avatar-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+.user-avatar-img:hover {
+    transform: scale(1.05);
 }
 
 .user-avatar {
@@ -121,6 +141,75 @@
     font-size: 20px;
 }
 
+.user-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: white;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    min-width: 200px;
+    z-index: 1000;
+    margin-top: 8px;
+    overflow: hidden;
+}
+
+.user-info {
+    padding: 16px;
+    border-bottom: 1px solid #f0f0f0;
+    background-color: #f8f9fa;
+}
+
+.user-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+}
+
+.user-email {
+    color: #666;
+    font-size: 12px;
+    margin-top: 2px;
+}
+
+.user-menu-items {
+    padding: 8px 0;
+}
+
+.user-menu-item {
+    display: block;
+    width: 100%;
+    padding: 10px 16px;
+    color: #333;
+    text-decoration: none;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+    border: none;
+    background: none;
+    cursor: pointer;
+    text-align: left;
+}
+
+.user-menu-item:hover {
+    background-color: #f8f9fa;
+    color: #007bff;
+}
+
+.user-menu-item i {
+    margin-right: 8px;
+    width: 16px;
+}
+
+.user-menu-item.logout {
+    color: #dc3545;
+}
+
+.user-menu-item.logout:hover {
+    background-color: #f8d7da;
+    color: #c82333;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .admin-navbar {
@@ -141,6 +230,13 @@
     }
     
     .dropdown-menu {
+        position: fixed;
+        left: 20px;
+        right: 20px;
+        width: auto;
+    }
+
+    .user-dropdown {
         position: fixed;
         left: 20px;
         right: 20px;

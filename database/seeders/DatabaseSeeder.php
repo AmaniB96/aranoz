@@ -13,9 +13,7 @@ class DatabaseSeeder extends Seeder
     {
         // Appeler les seeders dans l'ordre des dépendances
         $this->call([
-            CartSeeder::class,      // Paniers
-            CartProductSeeder::class, // Produits dans paniers
-            OrderSeeder::class,     // Commandes
+            RoleSeeder::class
         ]);
     }
 }

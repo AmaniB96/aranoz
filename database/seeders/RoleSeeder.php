@@ -13,12 +13,15 @@ class RoleSeeder extends Seeder
      */
     public function run(): void
     {
+
+        Role::query()->delete();
         Role::insert([
             ['name' => 'admin'],
-            ['name' => 'modo'],
+            ['name' => 'agent'],
             ['name' => 'user'],
             ['name' => 'webmaster'],
             ['name' => 'cm'],
+            ['name' => 'public']
         ]  
         );
     }
