@@ -4,6 +4,7 @@ use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ShopController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\ProductController;
@@ -80,5 +81,8 @@ Route::middleware(['auth', 'role:cm,admin'])->group(function () {
     Route::put('/admin/blogs/{id}', [BlogController::class, 'update'])->name('blogs.update');
     Route::delete('/admin/blogs/{id}', [BlogController::class, 'destroy'])->name('blogs.destroy');
 });
+
+Route::get('/shop', [ShopController::class, 'index'])->name('shop');
+
 
 require __DIR__.'/auth.php';
