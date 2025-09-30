@@ -11,6 +11,8 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\MailController;
 use App\Http\Controllers\WelcomeController;
 use App\Http\Controllers\MainController; // AJOUT
+use App\Http\Controllers\ShopProductController;
+use App\Http\Controllers\CartController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -83,6 +85,15 @@ Route::middleware(['auth', 'role:cm,admin'])->group(function () {
 });
 
 Route::get('/shop', [ShopController::class, 'index'])->name('shop');
+
+Route::middleware(['auth'])->group(function () {
+    Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
+    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+    Route::post('/cart/update/{id}', [CartController::class, 'update'])->name('cart.update');
+    Route::delete('/cart/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
+});
+
+Route::get('/products/{id}', [ShopProductController::class, 'show'])->name('products.show');
 
 
 require __DIR__.'/auth.php';

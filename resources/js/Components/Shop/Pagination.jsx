@@ -1,10 +1,10 @@
 import React from 'react';
+import { router } from '@inertiajs/react';
 
 export default function Pagination({ meta = {}, links = [] }) {
     const changePage = (url) => {
         if (!url) return;
-        // preserve filters in query string (backend will keep with withQueryString)
-        Inertia.get(url, {}, { preserveState: true });
+        router.get(url, {}, { preserveState: true });
     };
 
     return (

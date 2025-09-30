@@ -16,10 +16,16 @@
 
 /* product card */
 .product-card { 
-    background: #fff; 
+    background: transparent; 
     border-radius: 8px; 
     padding: 18px; 
     text-align:center; 
+    /* box-shadow:0 6px 20px rgba(0,0,0,0.03);  */
+    transition: all ease 0.3;
+}
+
+.product-card:hover { 
+    background: white;
     box-shadow:0 6px 20px rgba(0,0,0,0.03); 
 }
 
@@ -28,14 +34,30 @@
 .price { margin-bottom:8px; }
 .price .original { text-decoration: line-through; color:#999; margin-right:8px; }
 .price .discounted { color:#e84b4b; font-weight:700; }
-.btn-add { background:#ff3b6b; color:#fff; border:none; padding:8px 12px; border-radius:6px; cursor:pointer; }
-.sidebar-filters { background:transparent; }
-.sidebar-filters .filter-block h4 { font-size:14px; margin-bottom:12px; color:#222; }
+.btn-add { 
+    background:transparent; 
+    color:black; 
+    border:none; 
+    padding:8px 12px; 
+    border-radius:6px; 
+    cursor:pointer; 
+}
+.sidebar-filters { 
+    background:transparent; 
+    position: relative;
+}
+
+
+.sidebar-filters .filter-block h4 { font-size:18px; font-weight: 600; margin-bottom:12px; color:#222; }
 .sidebar-filters .category-list li, .color-list li { list-style:none; margin-bottom:8px; }
 .sidebar-filters button { background:none; border:none; color:#333; cursor:pointer; padding:6px 0; }
 .sidebar-filters button.active { font-weight:700; color:#ff3b6b; }
 .filter-actions { margin-top:12px; display:flex; gap:10px; }
 .pagination { display:flex; gap:10px; justify-content:center; margin:30px 0; }
+
+.color-filter {
+    margin-top: 35px;
+}
 
 .shop-header {
     background: linear-gradient(135deg, #e9fbff 0%, #f3feff 100%);
@@ -120,4 +142,30 @@
         max-width: 220px;
         max-height: 140px;
     }
+}
+
+.shop-page-container {
+    position: relative;
+}
+
+.search-above {
+    position: absolute;
+    top: 450px;
+    left: 480px;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.search-input-above {
+    width: 150px;
+    height: 25px;
+    padding: 15px 20px;
+    border: none;
+    border-bottom: 2px solid #ddd;
+    font-size: 16px;
+    outline: none;
+}
+
+.search-input-above:focus{
+    border-color: none;
 }
