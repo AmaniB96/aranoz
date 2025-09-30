@@ -8,13 +8,15 @@ export default function Nav() {
     const [showUserMenu, setShowUserMenu] = useState(false);
     const [cartCount, setCartCount] = useState(initialCartCount ?? 0);
 
+    const cartCountRef = useRef(cartCount);
+    useEffect(() => { cartCountRef.current = cartCount; }, [cartCount]);
+
     const [toast, setToast] = useState({ visible: false, name: '', image: '', message: '' });
     const toastTimer = useRef(null);
 
     useEffect(() => {
         const onCartAdded = (e) => {
             const detail = e?.detail ?? {};
-            // prefer server-provided cartCount, else increment locally
             if (typeof detail.cartCount === 'number') {
                 setCartCount(detail.cartCount);
             } else {
@@ -30,18 +32,41 @@ export default function Nav() {
             toastTimer.current = setTimeout(() => setToast({ visible: false, name: '', image: '', message: '' }), 3000);
         };
 
+        const onCartRemoved = (e) => {
+            const detail = e?.detail ?? {};
+            // compute authoritative new count when provided, otherwise decrement safely
+            const newCount = (typeof detail.cartCount === 'number')
+                ? detail.cartCount
+                : Math.max(0, cartCountRef.current - 1);
+
+            setCartCount(newCount);
+
+            const name = detail.name ?? '';
+            // personalized message; when count reaches 0 show "cart empty" variant
+            const message = newCount === 0
+                ? (name ? `${name} removed — your cart is now empty` : 'Item removed — your cart is now empty')
+                : (name ? `${name} removed` : 'Item removed');
+
+            setToast({ visible: true, name: name && newCount === 0 ? name : name, image: '', message });
+
+            if (toastTimer.current) clearTimeout(toastTimer.current);
+            toastTimer.current = setTimeout(() => setToast({ visible: false, name: '', image: '', message: '' }), 3000);
+        };
+
         const onCartAddFailed = (e) => {
-            const msg = e?.detail?.message ?? 'Could not add to cart';
+            const msg = e?.detail?.message ?? 'Could not update cart';
             setToast({ visible: true, name: '', image: '', message: msg });
             if (toastTimer.current) clearTimeout(toastTimer.current);
             toastTimer.current = setTimeout(() => setToast({ visible: false, name: '', image: '', message: '' }), 3000);
         };
 
         window.addEventListener('cart:added', onCartAdded);
+        window.addEventListener('cart:removed', onCartRemoved);
         window.addEventListener('cart:add-failed', onCartAddFailed);
 
         return () => {
             window.removeEventListener('cart:added', onCartAdded);
+            window.removeEventListener('cart:removed', onCartRemoved);
             window.removeEventListener('cart:add-failed', onCartAddFailed);
             if (toastTimer.current) clearTimeout(toastTimer.current);
         };

@@ -6,7 +6,8 @@ import '@/Components/Product/product-detail.css';
 import ShopHeader from '@/Components/Shop/ShopHeader';
 
 export default function Show() {
-    const { product } = usePage().props;
+    const { product, auth } = usePage().props;
+    const user = auth?.user ?? null;
     const [qty, setQty] = useState(1);
     const [activeTab, setActiveTab] = useState('spec'); // 'description' | 'spec' | 'comments'
 
@@ -15,18 +16,55 @@ export default function Show() {
     console.log('ProductDetail:', product.productDetail);
 
     const addToCart = async () => {
+        if (!user) {
+            if (confirm('You must be logged in to add products to cart. Go to login?')) {
+                router.visit('/login');
+            }
+            return;
+        }
+
+        const payload = { product_id: product.id, qty };
+        const tokenMeta = document.querySelector('meta[name="csrf-token"]');
+        const csrf = tokenMeta?.content ?? null;
+
+        if (!csrf) {
+            window.dispatchEvent(new CustomEvent('cart:add-failed', { detail: { message: 'CSRF token missing — refresh page' } }));
+            return;
+        }
+
         try {
-            await fetch('/cart/add', {
+            const res = await fetch('/cart/add', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    'X-CSRF-TOKEN': csrf
                 },
-                body: JSON.stringify({ product_id: product.id, qty })
+                body: JSON.stringify(payload)
             });
-            alert('Added to cart');
-        } catch (e) {
-            console.error(e);
+
+            if (res.status === 401) {
+                window.dispatchEvent(new CustomEvent('cart:add-failed', { detail: { message: 'Please login to add products to cart' } }));
+                return;
+            }
+
+            const json = await res.json();
+
+            if (json.success) {
+                window.dispatchEvent(new CustomEvent('cart:added', {
+                    detail: {
+                        cartCount: typeof json.cartCount === 'number' ? json.cartCount : null,
+                        productId: product.id,
+                        qty,
+                        name: product.name,
+                        image: product.image_url
+                    }
+                }));
+            } else {
+                window.dispatchEvent(new CustomEvent('cart:add-failed', { detail: { message: json.message || 'Could not add to cart' } }));
+            }
+        } catch (err) {
+            console.error(err);
+            window.dispatchEvent(new CustomEvent('cart:add-failed', { detail: { message: 'Network error' } }));
         }
     };
 

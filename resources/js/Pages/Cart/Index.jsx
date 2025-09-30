@@ -1,16 +1,103 @@
-import React from 'react';
-import { usePage, router, Link } from '@inertiajs/react';
+import React, { useState, useMemo, useRef } from 'react';
+import { usePage, Link } from '@inertiajs/react';
 import '@/Components/Cart/cart.css';
 
 export default function Index() {
-    const { items = [], subtotal = 0 } = usePage().props;
+    const { items: initialItems = [], subtotal: initialSubtotal = 0 } = usePage().props;
+    const [items, setItems] = useState(initialItems);
+    const prevItemsRef = useRef(initialItems);
 
-    const updateQty = (id, qty) => {
-        router.post(`/cart/update/${id}`, { quantity: qty }, { preserveState: true });
+    const subtotal = useMemo(() => {
+        return items.reduce((s, it) => s + Number(it.total || (it.unit_price * it.quantity) || 0), 0);
+    }, [items]);
+
+    const updateQty = async (id, qty) => {
+        // optimistic update
+        const prev = items;
+        prevItemsRef.current = prev;
+        setItems(prevItems => prevItems.map(it => it.id === id ? { ...it, quantity: qty, total: Number((it.unit_price * qty).toFixed(2)) } : it));
+
+        const tokenMeta = document.querySelector('meta[name="csrf-token"]');
+        const csrf = tokenMeta?.content ?? null;
+        if (!csrf) {
+            window.dispatchEvent(new CustomEvent('cart:add-failed', { detail: { message: 'CSRF token missing — refresh page' } }));
+            setItems(prev); // revert
+            return;
+        }
+
+        try {
+            const res = await fetch(`/cart/update/${id}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrf
+                },
+                body: JSON.stringify({ quantity: qty })
+            });
+
+            if (!res.ok) {
+                throw new Error('Update failed');
+            }
+
+            const json = await res.json();
+            if (!json.success) throw new Error(json.message || 'Update failed');
+
+            // dispatch cart updated event with authoritative count if provided
+            if (typeof json.cartCount === 'number') {
+                window.dispatchEvent(new CustomEvent('cart:added', { detail: { cartCount: json.cartCount } }));
+            }
+        } catch (err) {
+            console.error(err);
+            // revert optimistic change
+            setItems(prevItemsRef.current);
+            window.dispatchEvent(new CustomEvent('cart:add-failed', { detail: { message: 'Could not update quantity' } }));
+        }
     };
 
-    const remove = (id) => {
-        router.delete(`/cart/remove/${id}`, {}, { preserveState: true });
+    const remove = async (id, name) => {
+        const tokenMeta = document.querySelector('meta[name="csrf-token"]');
+        const csrf = tokenMeta?.content ?? null;
+        if (!csrf) {
+            window.dispatchEvent(new CustomEvent('cart:add-failed', { detail: { message: 'CSRF token missing — refresh page' } }));
+            return;
+        }
+
+        // optimistic remove locally
+        const prev = items;
+        prevItemsRef.current = prev;
+        setItems(prevItems => prevItems.filter(it => it.id !== id));
+
+        try {
+            const res = await fetch(`/cart/remove/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrf,
+                },
+            });
+
+            if (!res.ok) {
+                throw new Error('Remove failed');
+            }
+
+            const json = await res.json();
+            if (!json.success) throw new Error(json.message || 'Remove failed');
+
+            // dispatch server-authoritative event (Nav listens)
+            window.dispatchEvent(new CustomEvent('cart:removed', {
+                detail: {
+                    cartCount: typeof json.cartCount === 'number' ? json.cartCount : null,
+                    name: json.removedName ?? name,
+                }
+            }));
+
+            // no page reload — UI already updated
+        } catch (err) {
+            console.error(err);
+            // revert on error
+            setItems(prevItemsRef.current);
+            window.dispatchEvent(new CustomEvent('cart:add-failed', { detail: { message: 'Could not remove item' } }));
+        }
     };
 
     return (
@@ -44,7 +131,7 @@ export default function Index() {
                                     <input type="text" value={it.quantity} readOnly />
                                     <button onClick={() => updateQty(it.id, it.quantity + 1)}>+</button>
                                 </div>
-                                <button className="remove-link" onClick={() => remove(it.id)}>Remove</button>
+                                <button className="remove-link" onClick={() => remove(it.id, it.name)}>Remove</button>
                             </div>
                             <div className="col total">
                                 ${it.total}
@@ -61,7 +148,7 @@ export default function Index() {
                     <div className="summary">
                         <div className="subtotal">
                             <span>Subtotal</span>
-                            <strong>${subtotal}</strong>
+                            <strong>${subtotal.toFixed(2)}</strong>
                         </div>
                         <div className="actions">
                             <Link href="/shop" className="btn-secondary">Continue Shopping</Link>

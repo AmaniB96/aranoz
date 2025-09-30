@@ -116,10 +116,25 @@ class CartController extends Controller
     {
         $user = $request->user();
         $cp = CartProduct::findOrFail($id);
+
+        // ensure this cart product belongs to the user's cart
         if ($cp->cart->user_id !== $user->id) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
+
+        // capture product name for client toast
+        $productName = $cp->product->name ?? null;
+
         $cp->delete();
-        return response()->json(['success' => true]);
+
+        // recompute cart count
+        $cart = Cart::where('user_id', $user->id)->first();
+        $cartCount = $cart ? (int) $cart->cartProducts()->sum('quantity') : 0;
+
+        return response()->json([
+            'success' => true,
+            'cartCount' => $cartCount,
+            'removedName' => $productName,
+        ]);
     }
 }
