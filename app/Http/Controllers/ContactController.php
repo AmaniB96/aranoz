@@ -16,6 +16,14 @@ class ContactController extends Controller
         ]);
     }
 
+    public function publicIndex() {
+        $contact = Contact::first();
+
+        return Inertia::render('Contact/Contact', [
+            'contact' => $contact
+        ]);
+    }
+
     public function update(Request $request, $id) {
 
         $data = $request->validate([

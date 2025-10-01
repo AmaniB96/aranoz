@@ -24,6 +24,7 @@
     },
     "dependencies": {
         "@fortawesome/fontawesome-free": "^7.0.1",
-        "inertia": "github:inertiajs/inertia"
+        "inertia": "github:inertiajs/inertia",
+        "react-hot-toast": "^2.6.0"
     }
 }

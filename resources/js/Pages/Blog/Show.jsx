@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { usePage, Link, router } from '@inertiajs/react';
 import BlogHeader from '@/Pages/Blog/BlogHeader';
+import toast, { Toaster } from 'react-hot-toast';
 import '@/Pages/Blog/blog.css';
 
 export default function Show() {
@@ -41,17 +42,22 @@ export default function Show() {
         e.preventDefault();
         
         if (!user) {
-            alert('Please login to post a comment');
+            toast.error('Please login to post a comment');
             return;
         }
         
+        if (!commentText.trim()) {
+            toast.error('Please enter a comment');
+            return;
+        }
+
         setIsSubmitting(true);
 
         const tokenMeta = document.querySelector('meta[name="csrf-token"]');
         const csrf = tokenMeta?.content ?? null;
 
         if (!csrf) {
-            alert('CSRF token missing — refresh page');
+            toast.error('CSRF token missing — refresh page');
             setIsSubmitting(false);
             return;
         }
@@ -70,21 +76,58 @@ export default function Show() {
 
             if (json.success) {
                 setCommentText('');
-                router.reload();
-                alert('Comment posted successfully!');
+                toast.success('Comment posted successfully!');
+                
+                // Recharger après un délai pour permettre au toast de s'afficher
+                setTimeout(() => {
+                    router.reload();
+                }, 1000);
             } else {
-                alert(json.message || 'Could not post comment');
+                toast.error(json.message || 'Could not post comment');
             }
         } catch (err) {
             console.error(err);
-            alert('Network error');
+            toast.error('Network error occurred');
         } finally {
             setIsSubmitting(false);
         }
     };
 
+    const handleSearch = (e) => {
+        e.preventDefault();
+        if (searchTerm.trim()) {
+            toast.success(`Searching for: ${searchTerm}`);
+            // Ici tu peux implémenter la recherche réelle
+        }
+    };
+
     return (
         <>
+            <Toaster 
+                position="top-right"
+                toastOptions={{
+                    duration: 4000,
+                    style: {
+                        background: '#363636',
+                        color: '#fff',
+                    },
+                    success: {
+                        duration: 3000,
+                        iconTheme: {
+                            primary: '#10B981',
+                            secondary: '#fff',
+                        },
+                    },
+                    error: {
+                        duration: 4000,
+                        iconTheme: {
+                            primary: '#EF4444',
+                            secondary: '#fff',
+                        },
+                    },
+                }}
+            />
+            
             <BlogHeader />
             <div className="blog-single-page">
                 <div className="container blog-container">
@@ -196,14 +239,16 @@ export default function Show() {
 
                     <aside className="blog-sidebar">
                         <div className="sidebar-widget search-widget">
-                            <input
-                                type="text"
-                                placeholder="Search Keywords"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="search-input"
-                            />
-                            <button className="search-btn">SEARCH</button>
+                            <form onSubmit={handleSearch}>
+                                <input
+                                    type="text"
+                                    placeholder="Search Keywords"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="search-input"
+                                />
+                                <button type="submit" className="search-btn">SEARCH</button>
+                            </form>
                         </div>
 
                         <div className="sidebar-widget category-widget">
@@ -251,8 +296,21 @@ export default function Show() {
 
                         <div className="sidebar-widget newsletter-widget">
                             <h4 className="widget-title">Newsletter</h4>
-                            <form className="newsletter-form" onSubmit={(e) => e.preventDefault()}>
-                                <input type="email" placeholder="Your email" className="newsletter-input" />
+                            <form className="newsletter-form" onSubmit={(e) => {
+                                e.preventDefault();
+                                const email = e.target.email.value;
+                                if (email) {
+                                    toast.success('Newsletter subscription successful!');
+                                    e.target.reset();
+                                }
+                            }}>
+                                <input 
+                                    type="email" 
+                                    name="email"
+                                    placeholder="Your email" 
+                                    className="newsletter-input" 
+                                    required
+                                />
                                 <button type="submit" className="newsletter-btn">SUBSCRIBE</button>
                             </form>
                         </div>

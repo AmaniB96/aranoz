@@ -96,6 +96,9 @@ Route::middleware(['auth'])->group(function () {
 
 Route::get('/products/{id}', [ShopProductController::class, 'show'])->name('products.show');
 
+// Route publique pour la page contact
+Route::get('/contact', [ContactController::class, 'publicIndex'])->name('contact.public');
+
 // Routes publiques pour le blog
 Route::get('/blog', [BlogController::class, 'publicIndex'])->name('blog.index');
 Route::get('/blog/{id}', [BlogController::class, 'publicShow'])->name('blog.show');
