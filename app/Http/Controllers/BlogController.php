@@ -6,7 +6,6 @@ use App\Models\Blog;
 use App\Models\BlogCategory;
 use App\Models\Tag;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class BlogController extends Controller
@@ -91,5 +90,184 @@ class BlogController extends Controller
     public function destroy($id) {
         Blog::findOrFail($id)->delete();
         return redirect()->route('blogs.index')->with('success', 'Blog deleted successfully.');
+    }
+
+    public function publicIndex()
+    {
+        $blogs = Blog::with(['user', 'blogCategory', 'blogComments', 'tags'])
+            ->orderBy('date', 'desc')
+            ->get()
+            ->map(function ($blog) {
+                return [
+                    'id' => $blog->id,
+                    'title' => $blog->title,
+                    'article' => $blog->article,
+                    'image' => $blog->image ? "/storage/{$blog->image}" : null,
+                    'date' => $blog->date,
+                    'user' => $blog->user ? ['name' => $blog->user->name] : null,
+                    'category' => $blog->blogCategory ? ['name' => $blog->blogCategory->name] : null,
+                    'comments_count' => $blog->blogComments->count(),
+                    'tags' => $blog->tags->map(fn($tag) => ['id' => $tag->id, 'name' => $tag->name])
+                ];
+            });
+
+        $categories = BlogCategory::withCount('blogs')->get();
+        
+        $tags = Tag::with('blogs')->get()->map(function ($tag) {
+            return [
+                'id' => $tag->id,
+                'name' => $tag->name,
+                'count' => $tag->blogs->count()
+            ];
+        });
+
+        $recentPosts = Blog::with('user')
+            ->orderBy('date', 'desc')
+            ->take(4)
+            ->get()
+            ->map(function ($blog) {
+                return [
+                    'id' => $blog->id,
+                    'title' => $blog->title,
+                    'date' => $blog->date
+                ];
+            });
+
+        return Inertia::render('Blog/Blog', [
+            'blogs' => $blogs,
+            'categories' => $categories,
+            'tags' => $tags,
+            'recentPosts' => $recentPosts
+        ]);
+    }
+
+    public function publicShow($id)
+    {
+        $blog = Blog::with(['user', 'blogCategory', 'blogComments.user', 'tags'])
+            ->findOrFail($id);
+
+        // Récupérer les blogs récents pour la sidebar
+        $recentPosts = Blog::with('user')
+            ->where('id', '!=', $id)
+            ->orderBy('date', 'desc')
+            ->take(4)
+            ->get()
+            ->map(function ($blog) {
+                return [
+                    'id' => $blog->id,
+                    'title' => $blog->title,
+                    'date' => $blog->date
+                ];
+            });
+
+        $categories = BlogCategory::withCount('blogs')->get();
+        
+        $tags = Tag::with('blogs')->get()->map(function ($tag) {
+            return [
+                'id' => $tag->id,
+                'name' => $tag->name,
+                'count' => $tag->blogs->count()
+            ];
+        });
+
+        return Inertia::render('Blog/Show', [
+            'blog' => [
+                'id' => $blog->id,
+                'title' => $blog->title,
+                'article' => $blog->article,
+                'image' => $blog->image ? "/storage/{$blog->image}" : null,
+                'date' => $blog->date,
+                'user' => $blog->user ? ['name' => $blog->user->name] : null,
+                'category' => $blog->blogCategory ? ['name' => $blog->blogCategory->name] : null,
+                'comments' => $blog->blogComments->map(function ($comment) {
+                    return [
+                        'id' => $comment->id,
+                        'comment' => $comment->comment,
+                        'user' => $comment->user ? ['name' => $comment->user->name] : null,
+                        'created_at' => $comment->created_at
+                    ];
+                }),
+                'tags' => $blog->tags->map(fn($tag) => ['id' => $tag->id, 'name' => $tag->name])
+            ],
+            'categories' => $categories,
+            'tags' => $tags,
+            'recentPosts' => $recentPosts
+        ]);
+    }
+
+    public function publicByCategory($id)
+    {
+        $category = BlogCategory::findOrFail($id);
+        
+        $blogs = Blog::with(['user', 'blogCategory', 'blogComments', 'tags'])
+            ->where('blog_category_id', $id)
+            ->orderBy('date', 'desc')
+            ->get()
+            ->map(function ($blog) {
+                return [
+                    'id' => $blog->id,
+                    'title' => $blog->title,
+                    'article' => $blog->article,
+                    'image' => $blog->image ? "/storage/{$blog->image}" : null,
+                    'date' => $blog->date,
+                    'user' => $blog->user ? ['name' => $blog->user->name] : null,
+                    'category' => $blog->blogCategory ? ['name' => $blog->blogCategory->name] : null,
+                    'comments_count' => $blog->blogComments->count(),
+                    'tags' => $blog->tags->map(fn($tag) => ['id' => $tag->id, 'name' => $tag->name])
+                ];
+            });
+
+        return Inertia::render('Blog/Blog', [
+            'blogs' => $blogs,
+            'categories' => BlogCategory::withCount('blogs')->get(),
+            'tags' => Tag::with('blogs')->get(),
+            'recentPosts' => Blog::orderBy('date', 'desc')->take(4)->get()->map(function ($blog) {
+                return [
+                    'id' => $blog->id,
+                    'title' => $blog->title,
+                    'date' => $blog->date
+                ];
+            }),
+            'currentCategory' => $category
+        ]);
+    }
+
+    public function publicByTag($id)
+    {
+        $tag = Tag::findOrFail($id);
+        
+        $blogs = Blog::with(['user', 'blogCategory', 'blogComments', 'tags'])
+            ->whereHas('tags', function($query) use ($id) {
+                $query->where('tag_id', $id);
+            })
+            ->orderBy('date', 'desc')
+            ->get()
+            ->map(function ($blog) {
+                return [
+                    'id' => $blog->id,
+                    'title' => $blog->title,
+                    'article' => $blog->article,
+                    'image' => $blog->image ? "/storage/{$blog->image}" : null,
+                    'date' => $blog->date,
+                    'user' => $blog->user ? ['name' => $blog->user->name] : null,
+                    'category' => $blog->blogCategory ? ['name' => $blog->blogCategory->name] : null,
+                    'comments_count' => $blog->blogComments->count(),
+                    'tags' => $blog->tags->map(fn($tag) => ['id' => $tag->id, 'name' => $tag->name])
+                ];
+            });
+
+        return Inertia::render('Blog/Blog', [
+            'blogs' => $blogs,
+            'categories' => BlogCategory::withCount('blogs')->get(),
+            'tags' => Tag::with('blogs')->get(),
+            'recentPosts' => Blog::orderBy('date', 'desc')->take(4)->get()->map(function ($blog) {
+                return [
+                    'id' => $blog->id,
+                    'title' => $blog->title,
+                    'date' => $blog->date
+                ];
+            }),
+            'currentTag' => $tag
+        ]);
     }
 }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BlogCommentController;
 use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\OrderController;
@@ -95,5 +96,15 @@ Route::middleware(['auth'])->group(function () {
 
 Route::get('/products/{id}', [ShopProductController::class, 'show'])->name('products.show');
 
+// Routes publiques pour le blog
+Route::get('/blog', [BlogController::class, 'publicIndex'])->name('blog.index');
+Route::get('/blog/{id}', [BlogController::class, 'publicShow'])->name('blog.show');
+Route::get('/blog/category/{id}', [BlogController::class, 'publicByCategory'])->name('blog.category');
+Route::get('/blog/tag/{id}', [BlogController::class, 'publicByTag'])->name('blog.tag');
+
+// Route pour poster un commentaire (utilisateurs connectés seulement)
+Route::middleware(['auth'])->group(function () {
+    Route::post('/blog/{id}/comment', [BlogCommentController::class, 'store'])->name('blog.comment.store');
+});
 
 require __DIR__.'/auth.php';

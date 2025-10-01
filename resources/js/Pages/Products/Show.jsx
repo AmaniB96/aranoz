@@ -9,9 +9,8 @@ export default function Show() {
     const { product, auth } = usePage().props;
     const user = auth?.user ?? null;
     const [qty, setQty] = useState(1);
-    const [activeTab, setActiveTab] = useState('spec'); // 'description' | 'spec' | 'comments'
+    const [activeTab, setActiveTab] = useState('spec');
 
-    // Debug: vérifie si productDetail est chargé
     console.log('Product data:', product);
     console.log('ProductDetail:', product.productDetail);
 
