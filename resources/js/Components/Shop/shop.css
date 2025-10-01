@@ -66,6 +66,10 @@
     position: relative;
 }
 
+.loupe{
+    opacity: 0.3;
+}
+
 .shop-header-content {
     display: flex;
     justify-content: space-between;

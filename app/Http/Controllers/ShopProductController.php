@@ -8,41 +8,41 @@ use Inertia\Inertia;
 
 class ShopProductController extends Controller
 {
-    public function show($id, Request $request)
-    {
-        $product = Product::with(['promo','productDetail','productCategory'])->findOrFail($id);
+    public function show($id) {
+        $product = Product::with(['productCategory', 'color', 'promo', 'productDetail'])
+            ->findOrFail($id);
 
-        $image_url = $product->image_front ? "/storage/products/card/{$product->image_front}" : '/storage/products/default.png';
+        // Ajouter les URLs des images
+        $product->image_url = $product->image_front ? "/storage/products/show/{$product->image_front}" : null;
+        $product->gallery = array_filter([
+            $product->image_front ? "/storage/products/show/{$product->image_front}" : null,
+            $product->image_left ? "/storage/products/show/{$product->image_left}" : null,
+            $product->image_right ? "/storage/products/show/{$product->image_right}" : null,
+            $product->image_bonus ? "/storage/products/show/{$product->image_bonus}" : null,
+        ]);
 
-        $gallery = [];
-        foreach (['image_front','image_left','image_right','image_bonus'] as $imgField) {
-            if (!empty($product->{$imgField})) {
-                $gallery[] = "/storage/products/card/{$product->{$imgField}}";
-            }
-        }
-
-        $discounted_price = null;
-        $discount_percent = null;
-        if ($product->promo && ($product->promo->active ?? false) && isset($product->promo->discount)) {
-            $discount_percent = $product->promo->discount;
-            $discounted_price = round($product->price - ($product->price * $discount_percent / 100), 2);
-        }
-
-        // convert model to array and inject computed fields
-        $productArray = $product->toArray();
-        $productArray['image_url'] = $image_url;
-        $productArray['gallery'] = $gallery;
-        $productArray['discounted_price'] = $discounted_price;
-        $productArray['discount_percent'] = $discount_percent;
-
-        // Ensure productDetail is available as camelCase for the frontend (product.productDetail)
-        $productArray['productDetail'] = $product->productDetail ? $product->productDetail->toArray() : null;
-
-        // Optionally expose productCategory as camelCase too
-        $productArray['productCategory'] = $product->productCategory ? $product->productCategory->toArray() : null;
+        // Récupérer les best sellers (produits les plus populaires ou épinglés)
+        $bestSellers = Product::with(['promo'])
+            ->where('available', true)
+            ->where('id', '!=', $id) // Exclure le produit actuel
+            ->orderBy('isPinned', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->take(4)
+            ->get()
+            ->map(function ($product) {
+                return [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'price' => $product->price,
+                    'image_front' => $product->image_front,
+                    'promo_price' => $product->promo ? $product->promo->discount_amount : null,
+                    'promo_percentage' => $product->promo ? $product->promo->discount_percentage : null,
+                ];
+            });
 
         return Inertia::render('Products/Show', [
-            'product' => $productArray,
+            'product' => $product,
+            'bestSellers' => $bestSellers
         ]);
     }
 }

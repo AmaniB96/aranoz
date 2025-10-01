@@ -2,7 +2,12 @@ import React from 'react';
 import { Link } from '@inertiajs/react';
 import './bestSellers.css';
 
-export default function BestSellers({ products }) {
+export default function BestSellers({ products = [] }) {
+    // Si pas de produits, ne rien afficher
+    if (!products || products.length === 0) {
+        return null;
+    }
+
     return (
         <section className="best-sellers">
             <div className="container">
@@ -24,7 +29,7 @@ export default function BestSellers({ products }) {
                         >
                             <div className="product-image">
                                 <img 
-                                    src={`/storage/products/card/${product.image_front}`} 
+                                    src={product.image_front ? `/storage/products/card/${product.image_front}` : '/storage/products/default.png'} 
                                     alt={product.name}
                                     onError={(e) => {
                                         e.target.src = '/storage/products/default.png'; 
@@ -34,10 +39,13 @@ export default function BestSellers({ products }) {
                             <div className="product-info">
                                 <h3 className="product-name">{product.name}</h3>
                                 <div className="product-price">
-                                    {product.promo_id ? (
+                                    {product.promo_price || product.promo_percentage ? (
                                         <>
                                             <span className="original-price">${product.price}</span>
-                                            <span className="discounted-price">${product.promo_id}</span>
+                                            <span className="discounted-price">
+                                                ${product.promo_price || 
+                                                  (product.price * (1 - product.promo_percentage / 100)).toFixed(2)}
+                                            </span>
                                         </>
                                     ) : (
                                         <span className="price">${product.price}</span>

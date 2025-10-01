@@ -72,6 +72,24 @@ class ShopController extends Controller
             return $product;
         });
 
+        // Récupérer les best sellers (produits les plus populaires ou épinglés)
+        $bestSellers = Product::with(['promo'])
+            ->where('available', true)
+            ->orderBy('isPinned', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->take(4)
+            ->get()
+            ->map(function ($product) {
+                return [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'price' => $product->price,
+                    'image_front' => $product->image_front,
+                    'promo_price' => $product->promo ? $product->promo->discount_amount : null,
+                    'promo_percentage' => $product->promo ? $product->promo->discount_percentage : null,
+                ];
+            });
+
         $categories = ProductCategory::select('id','name')->get();
         // If ProductColor model differs, adjust name
         $colors = Color::select('id','name')->get();
@@ -81,6 +99,7 @@ class ShopController extends Controller
             'categories' => $categories,
             'colors' => $colors,
             'filters' => $request->only(['category','color','search','min_price','max_price','sort']),
+            'bestSellers' => $bestSellers
         ]);
     }
 }

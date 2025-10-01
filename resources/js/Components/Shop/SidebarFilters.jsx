@@ -110,7 +110,7 @@ export default function SidebarFilters({ categories = [], colors = [], filters =
                     type="button" 
                     onClick={handleReset}
                 >
-                    Reset
+                    <b>Reset</b>
                 </button>
             </div>
         </div>

@@ -6,9 +6,10 @@ import ProductCard from '@/Components/Shop/ProductCard';
 import Pagination from '@/Components/Shop/Pagination';
 import '@/Components/Shop/shop.css';
 import Footer from '@/Components/Footer/Footer';
+import BestSellers from '@/Components/BestSellers/BestSellers';
 
 export default function Shop() {
-    const { products, categories, colors, filters } = usePage().props;
+    const { products, categories, colors, filters, bestSellers = [] } = usePage().props;
     const [search, setSearch] = useState(filters.search || '');
 
     const handleFilter = (query) => {
@@ -39,7 +40,7 @@ export default function Shop() {
                         onBlur={handleSearchBlur}
                         className="search-input-above"
                     />
-                    <i className="fa-solid fa-magnifying-glass"></i>
+                    <i className="fa-solid fa-magnifying-glass loupe"></i>
                 </div>
 
                 <div className="shop-grid">
@@ -63,6 +64,7 @@ export default function Shop() {
                         <Pagination meta={products.meta} links={products.links} />
                     </section>
                 </div>
+                <BestSellers products={bestSellers} />
             </main>
             <Footer/>
         </div>

@@ -4,15 +4,17 @@ import ProductGallery from '@/Components/Product/ProductGallery';
 import ProductInfo from '@/Components/Product/ProductInfo';
 import '@/Components/Product/product-detail.css';
 import ShopHeader from '@/Components/Shop/ShopHeader';
+import BestSellers from '@/Components/BestSellers/BestSellers';
 
 export default function Show() {
-    const { product, auth } = usePage().props;
+    const { product, auth, bestSellers = [] } = usePage().props;
     const user = auth?.user ?? null;
     const [qty, setQty] = useState(1);
     const [activeTab, setActiveTab] = useState('spec');
 
     console.log('Product data:', product);
     console.log('ProductDetail:', product.productDetail);
+    console.log('Best sellers:', bestSellers);
 
     const addToCart = async () => {
         if (!user) {
@@ -153,6 +155,8 @@ export default function Show() {
                     )}
                 </div>
             </div>
+
+        <BestSellers products={bestSellers} />
         </div>
         </>
     );
