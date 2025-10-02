@@ -14,6 +14,7 @@ use App\Http\Controllers\WelcomeController;
 use App\Http\Controllers\MainController; // AJOUT
 use App\Http\Controllers\ShopProductController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\LikedProductController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -94,7 +95,19 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/cart/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
 });
 
-Route::get('/products/{id}', [ShopProductController::class, 'show'])->name('products.show');
+// Routes pour les produits likés
+Route::middleware(['auth'])->group(function () {
+    Route::post('/products/{productId}/like', [LikedProductController::class, 'toggle'])->name('products.like');
+    Route::get('/user/liked-products', [LikedProductController::class, 'userIndex'])->name('user.liked-products');
+});
+
+// Route admin pour voir les likes
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('/admin/liked-products', [LikedProductController::class, 'adminIndex'])->name('admin.liked-products');
+});
+
+// Route pour afficher un produit côté public
+Route::get('/products/{id}', [ProductController::class, 'showPublic'])->name('products.show.public');
 
 // Route publique pour la page contact
 Route::get('/contact', [ContactController::class, 'publicIndex'])->name('contact.public');

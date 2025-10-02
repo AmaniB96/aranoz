@@ -18,9 +18,50 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): Response
     {
+        $user = Auth::user();
+        
+        // Debug: Check if user has liked products
+        $likedProductsCount = $user->likedProducts()->count();
+        
+        $likedProducts = $user->likedProducts()
+            ->with(['productCategory', 'color', 'promo'])
+            ->get()
+            ->map(function ($product) use ($user) {
+                // $product est déjà un Product, pas un LikedProduct !
+                
+                // Skip if product doesn't exist (was deleted)
+                if (!$product) {
+                    return null;
+                }
+                
+                $product->discounted_price = null;
+                if ($product->promo && $product->promo->active && isset($product->promo->discount)) {
+                    $product->discounted_price = round($product->price - ($product->price * $product->promo->discount / 100), 2);
+                    $product->discount_percent = $product->promo->discount;
+                }
+                $product->image_url = $product->image_front ? "/storage/products/card/{$product->image_front}" : '/storage/products/default.png';
+                
+                // Add liked status (should be true since it comes from liked products)
+                $product->is_liked_by_user = true;
+                $product->liked_by_users_count = $product->likedByUsers()->count();
+                
+                return $product;
+            })
+            ->filter() // Remove null values
+            ->values(); // Reindex array
+
+        // Debug logs
+        \Log::info('User liked products count: ' . $likedProductsCount);
+        \Log::info('Liked products array count: ' . $likedProducts->count());
+
         return Inertia::render('Profile/Edit', [
-            'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
+            'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail && !$request->user()->hasVerifiedEmail(),
             'status' => session('status'),
+            'likedProducts' => $likedProducts,
+            'debug' => [
+                'likedProductsCount' => $likedProductsCount,
+                'processedCount' => $likedProducts->count()
+            ]
         ]);
     }
 

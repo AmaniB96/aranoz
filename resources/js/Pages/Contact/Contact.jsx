@@ -40,7 +40,6 @@ export default function Contact() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // Pour l'instant, le formulaire ne fait rien
         console.log('Form submitted:', formData);
     };
 
@@ -49,7 +48,6 @@ export default function Contact() {
             <ContactHeader />
             
             <div className="contact-page-public">
-                {/* Map Section */}
                 <div className="map-section">
                     <iframe
                         title="company-location"
@@ -66,11 +64,9 @@ export default function Contact() {
                     />
                 </div>
 
-                {/* Contact Content */}
                 <div className="contact-content">
                     <div className="container">
                         <div className="contact-grid">
-                            {/* Left Side - Form */}
                             <div className="contact-form-section">
                                 <h2 className="section-title">Get in Touch</h2>
                                 <p className="section-subtitle">Say something to start a live chat!</p>
@@ -127,7 +123,6 @@ export default function Contact() {
                                 </form>
                             </div>
 
-                            {/* Right Side - Contact Info */}
                             <div className="contact-info-section">
                                 <div className="contact-info-card">
                                     <div className="info-item">

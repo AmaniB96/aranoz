@@ -1,9 +1,19 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, usePage, router } from '@inertiajs/react';
+import toast, { Toaster } from 'react-hot-toast';
 
-export default function ProductCard({ product }) {
+export default function ProductCard({ product, onUnliked }) {
     const { auth } = usePage().props;
     const user = auth?.user ?? null;
+    const [isLiked, setIsLiked] = useState(product.is_liked_by_user || false);
+    const [likesCount, setLikesCount] = useState(product.liked_by_users_count || 0);
+    const [isLiking, setIsLiking] = useState(false);
+
+    // Update local state if product liked status changes from parent
+    useEffect(() => {
+        setIsLiked(product.is_liked_by_user || false);
+        setLikesCount(product.liked_by_users_count || 0);
+    }, [product.is_liked_by_user, product.liked_by_users_count]);
 
     const addToCart = async (e) => {
         e.preventDefault();
@@ -42,7 +52,6 @@ export default function ProductCard({ product }) {
             const json = await res.json();
 
             if (json.success) {
-                // use server cartCount when provided (live, authoritative)
                 window.dispatchEvent(new CustomEvent('cart:added', {
                     detail: {
                         cartCount: typeof json.cartCount === 'number' ? json.cartCount : null,
@@ -61,31 +70,127 @@ export default function ProductCard({ product }) {
         }
     };
 
+    const handleLike = (e) => {
+        e.preventDefault();
+        
+        if (!user) {
+            toast.error('Please login to like products');
+            return;
+        }
+
+        setIsLiking(true);
+
+        router.post(`/products/${product.id}/like`, {}, {
+            preserveState: true,
+            preserveScroll: true,
+            onSuccess: (page) => {
+                // Toggle local state optimistically
+                const newLikedState = !isLiked;
+                setIsLiked(newLikedState);
+                setLikesCount(newLikedState ? likesCount + 1 : likesCount - 1);
+                
+                // If this product was unliked and we're in the profile page, notify parent
+                if (!newLikedState && onUnliked) {
+                    onUnliked(product.id);
+                }
+                
+                // Show success message from flash
+                const flashSuccess = page.props.flash?.success;
+                if (flashSuccess) {
+                    toast.success(flashSuccess, {
+                        duration: 2000,
+                        style: {
+                            background: '#363636',
+                            color: '#fff',
+                        },
+                    });
+                }
+                setIsLiking(false);
+            },
+            onError: (errors) => {
+                const flashError = page.props.flash?.error;
+                if (flashError) {
+                    toast.error(flashError);
+                } else {
+                    toast.error('Could not toggle like');
+                }
+                setIsLiking(false);
+            },
+            onFinish: () => {
+                setIsLiking(false);
+            }
+        });
+    };
+
+    // Calculate discounted price based on promo
+    const discountedPrice = product.promo && product.promo.active && product.promo.discount 
+        ? (product.price * (1 - product.promo.discount / 100)).toFixed(2) 
+        : null;
+
     return (
-        <article className="product-card">
-            <Link href={`/products/${product.id}`} className="product-link">
-                <div className="product-thumb">
-                    <img src={product.image_url} alt={product.name}
-                        onError={(e) => { e.target.src = '/storage/products/default.png'; }} />
-                </div>
-                <h3 className="product-name">{product.name}</h3>
-            </Link>
+        <>
+            <Toaster 
+                position="top-right"
+                toastOptions={{
+                    duration: 2000,
+                    style: {
+                        background: '#363636',
+                        color: '#fff',
+                    },
+                }}
+            />
+            
+            <article className="product-card">
+                <Link href={`/products/${product.id}`} className="product-link">
+                    <div className="product-thumb">
+                        <img src={product.image_url} alt={product.name}
+                            onError={(e) => { e.target.src = '/storage/products/default.png'; }} />
+                        
+                        {/* Promo Badge */}
+                        {product.promo && product.promo.active && product.promo.discount && (
+                            <div className="promo-badge">
+                                -{product.promo.discount}%
+                            </div>
+                        )}
 
-            <div className="product-meta">
-                {product.discounted_price ? (
-                    <div className="price">
-                        <span className="original">${product.price}</span>
-                        <span className="discounted">${product.discounted_price}</span>
+                        {/* Like Button */}
+                        <button 
+                            onClick={handleLike}
+                            className={`like-btn ${isLiked ? 'liked' : ''} ${isLiking ? 'loading' : ''}`}
+                            disabled={isLiking}
+                            title={isLiked ? 'Unlike this product' : 'Like this product'}
+                        >
+                            <i className={isLiked ? 'fa-solid fa-heart' : 'fa-regular fa-heart'} 
+                               style={isLiked ? {color: '#de5445'} : {}}></i>
+                        </button>
                     </div>
-                ) : (
-                    <div className="price"><span>${product.price}</span></div>
-                )}
+                    <h3 className="product-name">{product.name}</h3>
+                </Link>
 
-                <div className="product-actions">
-                    <button onClick={addToCart} className="btn-add">Add to cart</button>
-                    <button type="button"><i className="fa-regular fa-heart"></i></button>
+                <div className="product-meta">
+                    {discountedPrice ? (
+                        <div className="price">
+                            <span className="original">${product.price}</span>
+                            <span className="discounted">${discountedPrice}</span>
+                        </div>
+                    ) : (
+                        <div className="price"><span>${product.price}</span></div>
+                    )}
+
+                    <div className="product-actions">
+                        <button onClick={addToCart} className="btn-add">+ Add to cart</button>
+                        <button 
+                            onClick={handleLike}
+                            className={`btn-like ${isLiked ? 'liked' : ''} ${isLiking ? 'loading' : ''}`}
+                            disabled={isLiking}
+                            title={isLiked ? 'Unlike this product' : 'Like this product'}
+                        >
+                            <i className={isLiked ? 'fa-solid fa-heart' : 'fa-regular fa-heart'} 
+                               style={isLiked ? {color: '#de5445'} : {}}></i>
+                        </button>
+                    </div>
                 </div>
-            </div>
-        </article>
+            </article>
+        </>
     );
 }

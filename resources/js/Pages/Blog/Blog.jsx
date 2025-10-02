@@ -3,7 +3,7 @@ import { usePage, Link } from '@inertiajs/react';
 import BlogHeader from '@/Pages/Blog/BlogHeader';
 import '@/Pages/Blog/blog.css';
 
-export default function Index() {
+export default function Blog() {
     const { blogs = [], categories = [], tags = [], recentPosts = [] } = usePage().props;
     const [searchTerm, setSearchTerm] = useState('');
 

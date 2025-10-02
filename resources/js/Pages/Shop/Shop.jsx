@@ -50,7 +50,7 @@ export default function Shop() {
                             colors={colors}
                             filters={filters}
                             onFilter={handleFilter}
-                            showSearch={false} // Masquer la recherche dans la sidebar
+                            showSearch={false}
                         />
                     </aside>
 

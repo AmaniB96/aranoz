@@ -6,12 +6,14 @@ use App\Models\Color;
 use App\Models\Product;
 use App\Models\ProductCategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class ShopController extends Controller
 {
     public function index(Request $request)
     {
+        $user = Auth::user();
         $query = Product::query()->with('promo', 'productCategory');
 
         // Filters (server-side)
@@ -61,7 +63,7 @@ class ShopController extends Controller
         $products = $query->paginate(9)->withQueryString();
 
         // Compute discounted_price attribute for frontend
-        $products->getCollection()->transform(function ($product) {
+        $products->getCollection()->transform(function ($product) use ($user) {
             $product->discounted_price = null;
             if ($product->promo && $product->promo->active && isset($product->promo->discount)) {
                 $product->discounted_price = round($product->price - ($product->price * $product->promo->discount / 100), 2);
@@ -69,6 +71,11 @@ class ShopController extends Controller
             }
             // ensure image path is present
             $product->image_url = $product->image_front ? "/storage/products/card/{$product->image_front}" : '/storage/products/default.png';
+            
+            // Add liked status for current user
+            $product->is_liked_by_user = $user ? $product->likedByUsers()->where('user_id', $user->id)->exists() : false;
+            $product->liked_by_users_count = $product->likedByUsers()->count();
+            
             return $product;
         });
 
@@ -79,19 +86,28 @@ class ShopController extends Controller
             ->orderBy('created_at', 'desc')
             ->take(4)
             ->get()
-            ->map(function ($product) {
-                return [
+            ->map(function ($product) use ($user) {
+                $data = [
                     'id' => $product->id,
                     'name' => $product->name,
                     'price' => $product->price,
                     'image_front' => $product->image_front,
+                    'image_url' => $product->image_front ? "/storage/products/card/{$product->image_front}" : '/storage/products/default.png',
                     'promo_price' => $product->promo ? $product->promo->discount_amount : null,
                     'promo_percentage' => $product->promo ? $product->promo->discount_percentage : null,
+                    'is_liked_by_user' => $user ? $product->likedByUsers()->where('user_id', $user->id)->exists() : false,
+                    'liked_by_users_count' => $product->likedByUsers()->count(),
                 ];
+                
+                // Add promo object for consistency
+                if ($product->promo) {
+                    $data['promo'] = $product->promo;
+                }
+                
+                return $data;
             });
 
         $categories = ProductCategory::select('id','name')->get();
-        // If ProductColor model differs, adjust name
         $colors = Color::select('id','name')->get();
 
         return Inertia::render('Shop/Shop', [

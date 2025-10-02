@@ -2,7 +2,7 @@ import React from 'react';
 import QtySelector from './QtySelector';
 import { Link } from '@inertiajs/react';
 
-export default function ProductInfo({ product, qty, setQty, onAddToCart }) {
+export default function ProductInfo({ product, qty, setQty, onAddToCart, onLike, isLiked, likesCount, isLiking }) {
     const inStock = product.stock > 0;
 
     return (
@@ -37,7 +37,15 @@ export default function ProductInfo({ product, qty, setQty, onAddToCart }) {
             <div className="product-actions-row">
                 <QtySelector qty={qty} setQty={setQty} />
                 <button className="btn-add-to-cart" onClick={onAddToCart}>ADD TO CART</button>
-                <button className="btn-like" title="Like (soon)"><i className="fa-regular fa-heart"></i></button>
+                <button 
+                    className="btn-like" 
+                    title={isLiked ? 'Unlike this product' : 'Like this product'}
+                    onClick={onLike}
+                    disabled={isLiking}
+                >
+                    <i className={isLiked ? 'fa-solid fa-heart' : 'fa-regular fa-heart'} 
+                       style={isLiked ? {color: '#de5445'} : {}}></i>
+                </button>
             </div>
         </div>
     );
