@@ -40,13 +40,13 @@ class CheckRole
         
         // Routes admin accessibles seulement aux rôles autorisés
         $adminRoutes = [
-            'admin*',  // Toutes les routes admin
-            'products*', // Gestion des produits
-            'categories*', // Gestion des catégories
-            'orders/manage*', // Gestion des commandes
-            'users*', // Gestion des utilisateurs
-            'blog/manage*', // Gestion du blog
-            'contact/admin*' // Gestion des contacts admin
+            'admin*', 
+            'products*', 
+            'categories*',
+            'orders/manage*', 
+            'users*', 
+            'blog/manage*', 
+            'contact/admin*' 
         ];
         
         $adminRoles = ['admin', 'webmaster', 'cm', 'agent'];

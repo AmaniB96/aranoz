@@ -4,11 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\Cart;
-use App\Mail\OrderConfirmation; // Ajoutez cette ligne
+use App\Mail\OrderConfirmation;
+use App\Mail\OrderShipped; // Ajoutez cette ligne
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail; // Ajoutez cette ligne
+use Illuminate\Support\Facades\Mail; // Assurez-vous que cette ligne est présente
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
@@ -40,12 +41,20 @@ class OrderController extends Controller
 
     public function update(Request $request, $id) {
         $order = Order::findOrFail($id);
+        
+        // Sauvegarder l'ancien statut pour vérifier le changement
+        $oldStatus = $order->status;
 
         $validatedData = $request->validate([
             'status' => ['sometimes', 'required', Rule::in(['pending', 'confirmed'])],
         ]);
 
         $order->update($validatedData);
+
+        // Si le statut passe de 'pending' à 'confirmed', envoyer l'email d'expédition
+        if ($oldStatus === 'pending' && $validatedData['status'] === 'confirmed') {
+            $this->sendShippingConfirmationEmail($order);
+        }
 
         return redirect()->back()->with('success', 'Order updated successfully.');
     }
@@ -296,5 +305,54 @@ class OrderController extends Controller
             'order' => $order,
             'total' => $total // Passez le nombre brut, pas formaté
         ]);
+    }
+
+    /**
+     * Envoyer l'email de confirmation d'expédition
+     */
+    private function sendShippingConfirmationEmail(Order $order)
+    {
+        try {
+            // Récupérer les détails de la commande
+            $cart = Cart::with('cartProducts.product.promo')->find($order->cart_id);
+            
+            if (!$cart) {
+                Log::error('Cart not found for order: ' . $order->id);
+                return;
+            }
+
+            $total = 0;
+            $items = [];
+
+            foreach ($cart->cartProducts as $cartProduct) {
+                $product = $cartProduct->product;
+                $unitPrice = $product->price;
+                
+                // Appliquer la promo si disponible
+                if ($product->promo && $product->promo->active && isset($product->promo->discount)) {
+                    $unitPrice = round($unitPrice - ($unitPrice * $product->promo->discount / 100), 2);
+                }
+                
+                $itemTotal = $unitPrice * $cartProduct->quantity;
+                $total += $itemTotal;
+                
+                $items[] = [
+                    'name' => $product->name,
+                    'quantity' => $cartProduct->quantity,
+                    'unit_price' => $unitPrice,
+                    'total' => $itemTotal,
+                ];
+            }
+
+            // Envoyer l'email à l'utilisateur
+            $userEmail = $cart->user->email;
+            Mail::to($userEmail)->send(new OrderShipped($order, $items, $total));
+            
+            Log::info('Shipping confirmation email sent for order: ' . $order->order_number . ' to: ' . $userEmail);
+            
+        } catch (\Exception $e) {
+            Log::error('Failed to send shipping confirmation email for order ' . $order->id . ': ' . $e->getMessage());
+            // Ne pas échouer la mise à jour du statut si l'email échoue
+        }
     }
 }
