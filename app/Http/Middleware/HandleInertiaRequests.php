@@ -31,6 +31,12 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $user = $request->user();
+        
+        // Charger l'utilisateur avec sa relation role
+        if ($user) {
+            $user->load('role');
+        }
+        
         $cartCount = 0;
         
         if ($user) {

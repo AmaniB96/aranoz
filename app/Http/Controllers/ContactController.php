@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Contact;
-use App\Mail\ContactMessage; // Ajoutez cette ligne
+use App\Mail\ContactMessage;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail; // Ajoutez cette ligne
-use Illuminate\Support\Facades\Log; // Ajoutez cette ligne
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class ContactController extends Controller
@@ -27,7 +27,7 @@ class ContactController extends Controller
         ]);
     }
 
-    // NOUVELLE MÉTHODE : Envoi d'email depuis le formulaire de contact
+    // CORRECTION : Retourner une réponse Inertia au lieu de JSON
     public function sendMessage(Request $request) {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -39,7 +39,7 @@ class ContactController extends Controller
         try {
             // Récupérer l'adresse email de l'admin depuis la table contact
             $contact = Contact::first();
-            $adminEmail = $contact ? $contact->email : 'admin@aranoz.com'; // Email par défaut si pas configuré
+            $adminEmail = $contact ? $contact->email : 'bxl.superstars@gmail.com';
 
             // Envoyer l'email à l'admin
             Mail::to($adminEmail)->send(new ContactMessage($validated));
@@ -50,10 +50,8 @@ class ContactController extends Controller
                 'subject' => $validated['subject']
             ]);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Votre message a été envoyé avec succès !'
-            ]);
+            // RETOURNER à la page contact avec un message de succès
+            return redirect()->back()->with('success', 'Votre message a été envoyé avec succès !');
 
         } catch (\Exception $e) {
             Log::error('Failed to send contact message', [
@@ -61,10 +59,8 @@ class ContactController extends Controller
                 'data' => $validated
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Une erreur est survenue lors de l\'envoi du message. Veuillez réessayer.'
-            ], 500);
+            // RETOURNER à la page contact avec un message d'erreur
+            return redirect()->back()->with('error', 'Une erreur est survenue lors de l\'envoi du message. Veuillez réessayer.');
         }
     }
 

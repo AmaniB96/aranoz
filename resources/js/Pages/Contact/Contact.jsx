@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { usePage, router } from '@inertiajs/react';
+import toast, { Toaster } from 'react-hot-toast';
 import ContactHeader from './ContactHeader';
 import './contact.css';
 
 export default function Contact() {
-    const { contact } = usePage().props;
+    const { contact, flash } = usePage().props; // Ajoutez flash
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -12,8 +13,35 @@ export default function Contact() {
         message: ''
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [submitMessage, setSubmitMessage] = useState('');
-    const [submitMessageType, setSubmitMessageType] = useState(''); // 'success' ou 'error'
+
+    // Gestion des messages flash
+    useEffect(() => {
+        if (flash?.success) {
+            toast.success(flash.success, {
+                duration: 4000,
+                position: 'top-right',
+                style: {
+                    background: '#10b981',
+                    color: '#fff',
+                    fontWeight: '500',
+                },
+                icon: '✅',
+            });
+        }
+
+        if (flash?.error) {
+            toast.error(flash.error, {
+                duration: 4000,
+                position: 'top-right',
+                style: {
+                    background: '#ef4444',
+                    color: '#fff',
+                    fontWeight: '500',
+                },
+                icon: '❌',
+            });
+        }
+    }, [flash]);
 
     const getMapSrc = () => {
         if (!contact?.street && !contact?.city) {
@@ -44,14 +72,11 @@ export default function Contact() {
     const handleSubmit = (e) => {
         e.preventDefault();
         setIsSubmitting(true);
-        setSubmitMessage('');
-        setSubmitMessageType('');
 
         router.post('/contact/send-message', formData, {
             onSuccess: (page) => {
                 setIsSubmitting(false);
-                setSubmitMessage('Votre message a été envoyé avec succès !');
-                setSubmitMessageType('success');
+                // Le toast sera affiché automatiquement via useEffect avec flash.success
                 // Réinitialiser le formulaire
                 setFormData({
                     name: '',
@@ -62,8 +87,32 @@ export default function Contact() {
             },
             onError: (errors) => {
                 setIsSubmitting(false);
-                setSubmitMessage('Une erreur est survenue. Veuillez réessayer.');
-                setSubmitMessageType('error');
+                // Afficher les erreurs de validation
+                if (errors) {
+                    Object.values(errors).forEach(error => {
+                        toast.error(error, {
+                            duration: 4000,
+                            position: 'top-right',
+                            style: {
+                                background: '#ef4444',
+                                color: '#fff',
+                                fontWeight: '500',
+                            },
+                            icon: '❌',
+                        });
+                    });
+                } else {
+                    toast.error('Une erreur est survenue. Veuillez réessayer.', {
+                        duration: 4000,
+                        position: 'top-right',
+                        style: {
+                            background: '#ef4444',
+                            color: '#fff',
+                            fontWeight: '500',
+                        },
+                        icon: '❌',
+                    });
+                }
                 console.error('Form submission errors:', errors);
             },
             onFinish: () => {
@@ -74,6 +123,17 @@ export default function Contact() {
 
     return (
         <>
+            <Toaster 
+                position="top-right"
+                toastOptions={{
+                    duration: 4000,
+                    style: {
+                        fontSize: '14px',
+                        fontWeight: '500',
+                    },
+                }}
+            />
+            
             <ContactHeader />
             
             <div className="contact-page-public">
@@ -99,12 +159,6 @@ export default function Contact() {
                             <div className="contact-form-section">
                                 <h2 className="section-title">Get in Touch</h2>
                                 <p className="section-subtitle">Say something to start a live chat!</p>
-
-                                {submitMessage && (
-                                    <div className={`submit-message ${submitMessageType}`}>
-                                        {submitMessage}
-                                    </div>
-                                )}
 
                                 <form className="public-contact-form" onSubmit={handleSubmit}>
                                     <div className="form-row">

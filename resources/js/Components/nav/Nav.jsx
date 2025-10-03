@@ -5,9 +5,22 @@ import './nav.css';
 export default function Nav() {
     const { auth, cartCount: initialCartCount } = usePage().props;
     const user = auth?.user ?? null;
+    
+    // DÉBOGAGE TEMPORAIRE - Afficher dans la console
+    console.log('🔍 DEBUG - User data:', user);
+    console.log('🔍 DEBUG - User role:', user?.role);
+    console.log('🔍 DEBUG - User role name:', user?.role?.name);
+    
     const [showUserMenu, setShowUserMenu] = useState(false);
     const [cartCount, setCartCount] = useState(initialCartCount ?? 0);
 
+    // Vérifier si l'utilisateur a accès au dashboard admin
+    const hasAdminAccess = user && ['admin', 'webmaster', 'cm', 'agent'].includes(user.role?.name);
+    
+    console.log('🔍 DEBUG - Has admin access:', hasAdminAccess);
+    console.log('🔍 DEBUG - Role check:', user?.role?.name, 'in', ['admin', 'webmaster', 'cm', 'agent']);
+    console.log('🔍 DEBUG - Check result:', ['admin', 'webmaster', 'cm', 'agent'].includes(user?.role?.name));
+    
     const cartCountRef = useRef(cartCount);
     useEffect(() => { cartCountRef.current = cartCount; }, [cartCount]);
 
@@ -127,6 +140,14 @@ export default function Nav() {
                                         <Link href="/profile" className="user-menu-item">
                                             <i className="fas fa-user"></i> Profile
                                         </Link>
+                                        
+                                        {/* Lien vers le dashboard admin - visible seulement pour les rôles autorisés */}
+                                        {hasAdminAccess && (
+                                            <Link href="/admin" className="user-menu-item admin-link">
+                                                <i className="fas fa-tachometer-alt"></i> Admin Dashboard
+                                            </Link>
+                                        )}
+                                        
                                         <Link href="/logout" method="post" as="button" className="user-menu-item logout">
                                             Logout
                                         </Link>

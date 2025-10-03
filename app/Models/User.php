@@ -49,6 +49,8 @@ class User extends Authenticatable
         ];
     }
 
+    protected $with = ['role'];
+
     public function role()
     {
         return $this->belongsTo(Role::class);

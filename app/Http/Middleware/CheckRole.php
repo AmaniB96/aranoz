@@ -16,16 +16,52 @@ class CheckRole
 
         $user = Auth::user();
         
-         if ($request->is('checkout') || 
-            $request->is('cart*') || 
-            $request->is('orders*') ||
-            $request->is('products/*/like') ||
-            $request->is('user/liked-products') ||
-            $request->is('api/cart*')) {
-            return $next($request);
+        // Liste des routes accessibles à tous les utilisateurs authentifiés
+        $publicAuthRoutes = [
+            'checkout',
+            'cart*',
+            'orders*',
+            'products/*/like',
+            'user/liked-products',
+            'api/cart*',
+            'profile',
+            'profile/*',
+            'dashboard',
+            'blog/*/comment',
+            'contact/send-message' // Ajouté pour le formulaire de contact
+        ];
+        
+        // Vérifier si la route actuelle correspond aux routes publiques
+        foreach ($publicAuthRoutes as $pattern) {
+            if ($request->is($pattern)) {
+                return $next($request);
+            }
         }
         
-        // Pour les autres routes, vérifier le rôle
+        // Routes admin accessibles seulement aux rôles autorisés
+        $adminRoutes = [
+            'admin*',  // Toutes les routes admin
+            'products*', // Gestion des produits
+            'categories*', // Gestion des catégories
+            'orders/manage*', // Gestion des commandes
+            'users*', // Gestion des utilisateurs
+            'blog/manage*', // Gestion du blog
+            'contact/admin*' // Gestion des contacts admin
+        ];
+        
+        $adminRoles = ['admin', 'webmaster', 'cm', 'agent'];
+        
+        // Vérifier si c'est une route admin
+        foreach ($adminRoutes as $pattern) {
+            if ($request->is($pattern)) {
+                if (!$user->role || !in_array($user->role->name, $adminRoles)) {
+                    abort(403, 'Access denied. Admin permissions required.');
+                }
+                return $next($request);
+            }
+        }
+        
+        // Pour les autres routes, vérifier le rôle demandé
         if (!$user->role || !in_array($user->role->name, $roles)) {
             abort(403, 'Access denied. Insufficient permissions.');
         }
