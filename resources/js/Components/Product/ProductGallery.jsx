@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 
+
 export default function ProductGallery({ gallery = [], main }) {
     const [active, setActive] = useState(0);
     const thumbs = gallery.length ? gallery : [main];

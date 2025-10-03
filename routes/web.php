@@ -132,4 +132,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/orders/{id}', [OrderController::class, 'show'])->name('orders.show');
 });
 
+Route::get('/contact', [ContactController::class, 'publicIndex'])->name('contact');
+Route::post('/contact/send-message', [ContactController::class, 'sendMessage'])->name('contact.send-message');
+
 require __DIR__.'/auth.php';

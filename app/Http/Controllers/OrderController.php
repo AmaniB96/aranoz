@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\Cart;
+use App\Mail\OrderConfirmation; // Ajoutez cette ligne
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail; // Ajoutez cette ligne
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
@@ -79,6 +81,8 @@ class OrderController extends Controller
         try {
             // Calculate total
             $total = 0;
+            $items = []; // Préparer les items pour l'email
+            
             foreach ($cart->cartProducts as $cartProduct) {
                 $product = $cartProduct->product;
                 $unitPrice = $product->price;
@@ -88,7 +92,16 @@ class OrderController extends Controller
                     $unitPrice = round($unitPrice - ($unitPrice * $product->promo->discount / 100), 2);
                 }
                 
-                $total += $unitPrice * $cartProduct->quantity;
+                $itemTotal = $unitPrice * $cartProduct->quantity;
+                $total += $itemTotal;
+                
+                // Préparer les données pour l'email
+                $items[] = [
+                    'name' => $product->name,
+                    'quantity' => $cartProduct->quantity,
+                    'unit_price' => $unitPrice,
+                    'total' => $itemTotal,
+                ];
             }
             
             Log::info('Total calculated: ' . $total);
@@ -127,6 +140,15 @@ class OrderController extends Controller
             ]);
             
             Log::info('New empty cart created for future purchases');
+            
+            // ENVOYER L'EMAIL DE CONFIRMATION
+            try {
+                Mail::to($user->email)->send(new OrderConfirmation($order, $items, $total));
+                Log::info('Order confirmation email sent to: ' . $user->email);
+            } catch (\Exception $emailException) {
+                Log::error('Failed to send order confirmation email: ' . $emailException->getMessage());
+                // Ne pas échouer la commande si l'email échoue
+            }
             
             DB::commit();
             

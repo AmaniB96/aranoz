@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { usePage } from '@inertiajs/react';
+import { usePage, router } from '@inertiajs/react';
 import ContactHeader from './ContactHeader';
 import './contact.css';
 
@@ -11,6 +11,9 @@ export default function Contact() {
         subject: '',
         message: ''
     });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitMessage, setSubmitMessage] = useState('');
+    const [submitMessageType, setSubmitMessageType] = useState(''); // 'success' ou 'error'
 
     const getMapSrc = () => {
         if (!contact?.street && !contact?.city) {
@@ -40,7 +43,33 @@ export default function Contact() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log('Form submitted:', formData);
+        setIsSubmitting(true);
+        setSubmitMessage('');
+        setSubmitMessageType('');
+
+        router.post('/contact/send-message', formData, {
+            onSuccess: (page) => {
+                setIsSubmitting(false);
+                setSubmitMessage('Votre message a été envoyé avec succès !');
+                setSubmitMessageType('success');
+                // Réinitialiser le formulaire
+                setFormData({
+                    name: '',
+                    email: '',
+                    subject: '',
+                    message: ''
+                });
+            },
+            onError: (errors) => {
+                setIsSubmitting(false);
+                setSubmitMessage('Une erreur est survenue. Veuillez réessayer.');
+                setSubmitMessageType('error');
+                console.error('Form submission errors:', errors);
+            },
+            onFinish: () => {
+                setIsSubmitting(false);
+            }
+        });
     };
 
     return (
@@ -71,6 +100,12 @@ export default function Contact() {
                                 <h2 className="section-title">Get in Touch</h2>
                                 <p className="section-subtitle">Say something to start a live chat!</p>
 
+                                {submitMessage && (
+                                    <div className={`submit-message ${submitMessageType}`}>
+                                        {submitMessage}
+                                    </div>
+                                )}
+
                                 <form className="public-contact-form" onSubmit={handleSubmit}>
                                     <div className="form-row">
                                         <div className="form-group">
@@ -81,6 +116,7 @@ export default function Contact() {
                                                 value={formData.name}
                                                 onChange={handleInputChange}
                                                 required
+                                                disabled={isSubmitting}
                                             />
                                         </div>
                                         <div className="form-group">
@@ -91,6 +127,7 @@ export default function Contact() {
                                                 value={formData.email}
                                                 onChange={handleInputChange}
                                                 required
+                                                disabled={isSubmitting}
                                             />
                                         </div>
                                     </div>
@@ -103,6 +140,7 @@ export default function Contact() {
                                             value={formData.subject}
                                             onChange={handleInputChange}
                                             required
+                                            disabled={isSubmitting}
                                         />
                                     </div>
 
@@ -114,11 +152,16 @@ export default function Contact() {
                                             value={formData.message}
                                             onChange={handleInputChange}
                                             required
+                                            disabled={isSubmitting}
                                         ></textarea>
                                     </div>
 
-                                    <button type="submit" className="send-message-btn">
-                                        SEND MESSAGE
+                                    <button 
+                                        type="submit" 
+                                        className="send-message-btn"
+                                        disabled={isSubmitting}
+                                    >
+                                        {isSubmitting ? 'SENDING...' : 'SEND MESSAGE'}
                                     </button>
                                 </form>
                             </div>
