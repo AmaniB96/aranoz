@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import './carousel.css';
 import Nav from '../nav/Nav';
 
-export default function Carousel() {
+export default function Carousel({ products = [] }) {
     const [currentSlide, setCurrentSlide] = useState(0);
 
-    const slides = [
+    // Default slides if no products provided
+    const defaultSlides = [
         {
             id: 1,
             title: "Chaise Moderne",
@@ -35,6 +36,18 @@ export default function Carousel() {
             slideNumber: "04"
         }
     ];
+
+    // Combine default slides with pinned products
+    const pinnedSlides = products.map((product, index) => ({
+        id: product.id,
+        title: product.name,
+        description: product.description,
+        image: product.image_front ? `/storage/products/carousel/${product.image_front}` : "/storage/products/default.png",
+        slideNumber: String(defaultSlides.length + index + 1).padStart(2, '0')
+    }));
+
+    // Always show default slides first, then pinned products
+    const slides = [...defaultSlides, ...pinnedSlides];
 
     const nextSlide = () => {
         setCurrentSlide((prev) => (prev + 1) % slides.length);

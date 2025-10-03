@@ -5,7 +5,9 @@ import Footer from '@/Components/Footer/Footer';
 
 export default function Register() {
     const { data, setData, post, processing, errors, reset } = useForm({
+        first_name: '',
         name: '',
+        pseudo: '',
         email: '',
         password: '',
         password_confirmation: '',
@@ -37,21 +39,57 @@ export default function Register() {
 
                     <form onSubmit={submit} className="register-form">
                         <div className="form-group">
-                            <label htmlFor="name" className="form-label">Username</label>
+                            <label htmlFor="first_name" className="form-label">First Name</label>
+                            <input
+                                id="first_name"
+                                type="text"
+                                name="first_name"
+                                value={data.first_name}
+                                className="form-input"
+                                autoComplete="given-name"
+                                autoFocus
+                                placeholder="Enter your first name"
+                                onChange={(e) => setData('first_name', e.target.value)}
+                                required
+                            />
+                            {errors.first_name && (
+                                <div className="form-error">{errors.first_name}</div>
+                            )}
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="name" className="form-label">Last Name</label>
                             <input
                                 id="name"
                                 type="text"
                                 name="name"
                                 value={data.name}
                                 className="form-input"
-                                autoComplete="name"
-                                autoFocus
-                                placeholder="Enter your username"
+                                autoComplete="family-name"
+                                placeholder="Enter your last name"
                                 onChange={(e) => setData('name', e.target.value)}
                                 required
                             />
                             {errors.name && (
                                 <div className="form-error">{errors.name}</div>
+                            )}
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="pseudo" className="form-label">Username</label>
+                            <input
+                                id="pseudo"
+                                type="text"
+                                name="pseudo"
+                                value={data.pseudo}
+                                className="form-input"
+                                autoComplete="username"
+                                placeholder="Enter your username"
+                                onChange={(e) => setData('pseudo', e.target.value)}
+                                required
+                            />
+                            {errors.pseudo && (
+                                <div className="form-error">{errors.pseudo}</div>
                             )}
                         </div>
 
@@ -63,7 +101,7 @@ export default function Register() {
                                 name="email"
                                 value={data.email}
                                 className="form-input"
-                                autoComplete="username"
+                                autoComplete="email"
                                 placeholder="Enter your email"
                                 onChange={(e) => setData('email', e.target.value)}
                                 required
@@ -139,7 +177,7 @@ export default function Register() {
                     <h2>You are new ?</h2>
                     <h2>Create new account here</h2>
                     <p>
-                        There are advances being made in science and technology everyday, 
+                        There are advances being made in science and technology everyday,
                         and a good example of this is the
                     </p>
                     <Link href={route('login')} className="login-account-btn">

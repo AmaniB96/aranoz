@@ -200,6 +200,14 @@ class ProductController extends Controller
         return redirect()->route('products.index')->with('success', 'Product deleted successfully.');
     }
 
+    public function togglePin($id) {
+        $product = Product::findOrFail($id);
+        $product->isPinned = !$product->isPinned;
+        $product->save();
+
+        return redirect()->back()->with('success', 'Product pin status updated successfully.');
+    }
+
     public function showPublic($id) {
         $user = Auth::user();
         $product = Product::with(['productCategory', 'color', 'promo', 'productDetail'])

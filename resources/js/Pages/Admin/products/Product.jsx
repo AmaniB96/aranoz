@@ -7,6 +7,7 @@ import AdminHeader from '../components/AdminHeader';
 export default function Product({ products, flash }) {
     const [successMessage, setSuccessMessage] = useState('');
     const [deletingProductId, setDeletingProductId] = useState(null);
+    const [togglingProductId, setTogglingProductId] = useState(null);
 
     const getImageUrl = (imageName, size) => {
         if (!imageName) return null;
@@ -37,6 +38,24 @@ export default function Product({ products, flash }) {
                 }
             });
         }
+    };
+
+    const handleTogglePin = (productId) => {
+        setTogglingProductId(productId);
+
+        router.post(`/admin/products/${productId}/toggle-pin`, {}, {
+            preserveState: true,
+            preserveScroll: true,
+            onSuccess: () => {
+                setSuccessMessage('Product pin status updated successfully!');
+                setTimeout(() => setSuccessMessage(''), 3000);
+                setTogglingProductId(null);
+            },
+            onError: (errors) => {
+                console.error('Error toggling pin status:', errors);
+                setTogglingProductId(null);
+            }
+        });
     };
 
     return (
@@ -105,6 +124,13 @@ export default function Product({ products, flash }) {
                                     <Link href={`/admin/products/${product.id}/edit`} className="action-btn edit-btn">
                                         Edit
                                     </Link>
+                                    <button
+                                        onClick={() => handleTogglePin(product.id)}
+                                        className={`action-btn ${product.isPinned ? 'unpin-btn' : 'pin-btn'}`}
+                                        disabled={togglingProductId === product.id}
+                                    >
+                                        {togglingProductId === product.id ? 'Updating...' : (product.isPinned ? 'Unpin' : 'Pin')}
+                                    </button>
                                     <button
                                         onClick={() => handleDelete(product.id)}
                                         className="action-btn delete-btn"

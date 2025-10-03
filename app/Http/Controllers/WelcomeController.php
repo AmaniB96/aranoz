@@ -12,13 +12,8 @@ class WelcomeController extends Controller
 {
     public function index()
     {
-        // Carrousel: 4 produits aléatoires + produits épinglés
+        // Carrousel: 4 produits par défaut + produits épinglés
         $pinnedProducts = Product::where('isPinned', true)->get();
-        $randomProducts = Product::whereNotIn('id', $pinnedProducts->pluck('id'))
-                                ->inRandomOrder()
-                                ->take(4 - $pinnedProducts->count())
-                                ->get();
-        $carouselProducts = $pinnedProducts->merge($randomProducts);
 
         // Categories (4 principales)
         $categories = ProductCategory::take(4)->get();
@@ -64,7 +59,7 @@ class WelcomeController extends Controller
         });
 
         return Inertia::render('Welcome', [
-            'carouselProducts' => $carouselProducts,
+            'carouselProducts' => $pinnedProducts,
             'categories' => $categories,
             'products' => $products,
             'weeklyProduct' => $weeklyProduct,

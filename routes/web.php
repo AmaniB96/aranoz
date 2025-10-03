@@ -56,6 +56,7 @@ Route::middleware(['auth', 'role:webmaster,admin'])->group(function () {
     Route::get('/admin/products/{id}/edit', [ProductController::class, 'edit'])->name('products.edit');
     Route::put('/admin/products/{id}', [ProductController::class, 'update'])->name('products.update');
     Route::delete('/admin/products/{id}', [ProductController::class, 'destroy'])->name('products.destroy');
+    Route::post('/admin/products/{id}/toggle-pin', [ProductController::class, 'togglePin'])->name('products.togglePin');
     
     Route::get('/admin/contact', [ContactController::class, 'index'])->name('contact');
     Route::put('/admin/contact/{id}', [ContactController::class, 'update'])->name('contactUpdate');
