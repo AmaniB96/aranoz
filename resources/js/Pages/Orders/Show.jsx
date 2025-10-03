@@ -44,7 +44,7 @@ export default function Show() {
                             <div className="info-item">
                                 <span className="label">Total Amount:</span>
                                 <span className="value text-2xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
-                                    ${total.toFixed(2)}
+                                    ${parseFloat(total).toFixed(2)}
                                 </span>
                             </div>
                         </div>

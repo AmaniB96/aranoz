@@ -116,7 +116,17 @@ class OrderController extends Controller
             // Mark cart as ordered
             $cart->update(['ordered_at' => now()]);
             
-            Log::info('Cart marked as ordered');
+            Log::info('Cart marked as ordered - products kept for history');
+            
+            // CRÉER UN NOUVEAU PANIER VIDE pour les futurs achats
+            Cart::create([
+                'user_id' => $user->id,
+                'ordered_at' => null,
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+            
+            Log::info('New empty cart created for future purchases');
             
             DB::commit();
             
@@ -262,7 +272,7 @@ class OrderController extends Controller
         
         return Inertia::render('Orders/Show', [
             'order' => $order,
-            'total' => number_format($total, 2)
+            'total' => $total // Passez le nombre brut, pas formaté
         ]);
     }
 }

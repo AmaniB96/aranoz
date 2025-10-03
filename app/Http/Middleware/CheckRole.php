@@ -16,6 +16,16 @@ class CheckRole
 
         $user = Auth::user();
         
+         if ($request->is('checkout') || 
+            $request->is('cart*') || 
+            $request->is('orders*') ||
+            $request->is('products/*/like') ||
+            $request->is('user/liked-products') ||
+            $request->is('api/cart*')) {
+            return $next($request);
+        }
+        
+        // Pour les autres routes, vérifier le rôle
         if (!$user->role || !in_array($user->role->name, $roles)) {
             abort(403, 'Access denied. Insufficient permissions.');
         }

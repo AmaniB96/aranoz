@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use App\Models\Cart;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -17,7 +18,7 @@ class HandleInertiaRequests extends Middleware
     /**
      * Determine the current asset version.
      */
-    public function version(Request $request): ?string
+    public function version(Request $request): string|null
     {
         return parent::version($request);
     }
@@ -29,14 +30,26 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $user = $request->user();
+        $cartCount = 0;
+        
+        if ($user) {
+            // Calculer le cartCount seulement pour les paniers actifs (non commandés)
+            $activeCart = Cart::where('user_id', $user->id)
+                ->whereNull('ordered_at')
+                ->first();
+            
+            if ($activeCart) {
+                $cartCount = $activeCart->cartProducts()->sum('quantity');
+            }
+        }
+        
         return [
             ...parent::share($request),
             'auth' => [
-                'user' => $request->user() ? [
-                    ...$request->user()->toArray(),
-                    'role' => $request->user()->role,
-                ] : null,
+                'user' => $user,
             ],
+            'cartCount' => (int) $cartCount,
         ];
     }
 }

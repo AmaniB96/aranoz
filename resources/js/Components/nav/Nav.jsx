@@ -34,7 +34,6 @@ export default function Nav() {
 
         const onCartRemoved = (e) => {
             const detail = e?.detail ?? {};
-            // compute authoritative new count when provided, otherwise decrement safely
             const newCount = (typeof detail.cartCount === 'number')
                 ? detail.cartCount
                 : Math.max(0, cartCountRef.current - 1);
@@ -42,13 +41,21 @@ export default function Nav() {
             setCartCount(newCount);
 
             const name = detail.name ?? '';
-            // personalized message; when count reaches 0 show "cart empty" variant
             const message = newCount === 0
                 ? (name ? `${name} removed — your cart is now empty` : 'Item removed — your cart is now empty')
                 : (name ? `${name} removed` : 'Item removed');
 
             setToast({ visible: true, name: name && newCount === 0 ? name : name, image: '', message });
 
+            if (toastTimer.current) clearTimeout(toastTimer.current);
+            toastTimer.current = setTimeout(() => setToast({ visible: false, name: '', image: '', message: '' }), 3000);
+        };
+
+        const onCartCleared = (e) => {
+            const detail = e?.detail ?? {};
+            setCartCount(detail.cartCount || 0);
+            setToast({ visible: true, name: '', image: '', message: 'Order placed successfully!' });
+            
             if (toastTimer.current) clearTimeout(toastTimer.current);
             toastTimer.current = setTimeout(() => setToast({ visible: false, name: '', image: '', message: '' }), 3000);
         };
@@ -62,11 +69,13 @@ export default function Nav() {
 
         window.addEventListener('cart:added', onCartAdded);
         window.addEventListener('cart:removed', onCartRemoved);
+        window.addEventListener('cart:cleared', onCartCleared);
         window.addEventListener('cart:add-failed', onCartAddFailed);
 
         return () => {
             window.removeEventListener('cart:added', onCartAdded);
             window.removeEventListener('cart:removed', onCartRemoved);
+            window.removeEventListener('cart:cleared', onCartCleared);
             window.removeEventListener('cart:add-failed', onCartAddFailed);
             if (toastTimer.current) clearTimeout(toastTimer.current);
         };

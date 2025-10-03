@@ -14,8 +14,11 @@ class CartController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
+        
+        // CORRECTION: Récupérer seulement le panier actif (non commandé)
         $cart = Cart::with(['cartProducts.product.promo', 'cartProducts.product.productCategory'])
             ->where('user_id', $user->id)
+            ->whereNull('ordered_at')  // Seulement les paniers non commandés
             ->first();
 
         $items = [];
@@ -68,7 +71,11 @@ class CartController extends Controller
 
         $qty = $data['qty'] ?? 1;
 
-        $cart = Cart::firstOrCreate(['user_id' => $user->id]);
+        // CORRECTION: Chercher/créer seulement les paniers NON commandés
+        $cart = Cart::firstOrCreate([
+            'user_id' => $user->id,
+            'ordered_at' => null  // Seulement les paniers non commandés
+        ]);
 
         $cartProduct = $cart->cartProducts()->where('product_id', $data['product_id'])->first();
 
@@ -82,7 +89,7 @@ class CartController extends Controller
             ]);
         }
 
-        // compute cartCount (sum quantities)
+        // compute cartCount (sum quantities) - seulement paniers actifs
         $cartCount = $cart->cartProducts()->sum('quantity');
 
         return response()->json([
@@ -117,8 +124,8 @@ class CartController extends Controller
         $user = $request->user();
         $cp = CartProduct::findOrFail($id);
 
-        // ensure this cart product belongs to the user's cart
-        if ($cp->cart->user_id !== $user->id) {
+        // ensure this cart product belongs to the user's cart AND is not ordered
+        if ($cp->cart->user_id !== $user->id || $cp->cart->ordered_at !== null) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
@@ -127,8 +134,8 @@ class CartController extends Controller
 
         $cp->delete();
 
-        // recompute cart count
-        $cart = Cart::where('user_id', $user->id)->first();
+        // recompute cart count - seulement paniers actifs
+        $cart = Cart::where('user_id', $user->id)->whereNull('ordered_at')->first();
         $cartCount = $cart ? (int) $cart->cartProducts()->sum('quantity') : 0;
 
         return response()->json([

@@ -107,6 +107,10 @@ export default function Index() {
             },
             onSuccess: (page) => {
                 console.log('Checkout successful:', page);
+                // Émettre un événement pour vider le panier dans la navigation
+                window.dispatchEvent(new CustomEvent('cart:cleared', { 
+                    detail: { cartCount: 0 } 
+                }));
             },
             onError: (errors) => {
                 console.error('Checkout errors:', errors);
