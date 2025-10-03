@@ -88,7 +88,7 @@ export default function MailShow({ mail, flash }) {
                     <div className="mail-detail-info">
                         <h2 className="mail-detail-title">{mail.title}</h2>
                         <div className="mail-detail-meta">
-                            <span className="mail-detail-sender">From: {mail.name}</span>
+                            <span className="mail-detail-sender">From: {mail.name} ({mail.email})</span>
                             <span className="mail-detail-date">
                                 {new Date(mail.created_at).toLocaleDateString()} at {new Date(mail.created_at).toLocaleTimeString()}
                             </span>

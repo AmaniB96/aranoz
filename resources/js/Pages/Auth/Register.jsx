@@ -1,9 +1,7 @@
-import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
-import PrimaryButton from '@/Components/PrimaryButton';
-import TextInput from '@/Components/TextInput';
-import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
+import './register.css';
+import Nav from '@/Components/nav/Nav';
+import Footer from '@/Components/Footer/Footer';
 
 export default function Register() {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -11,6 +9,7 @@ export default function Register() {
         email: '',
         password: '',
         password_confirmation: '',
+        subscribe_newsletter: false,
     });
 
     const submit = (e) => {
@@ -22,99 +21,134 @@ export default function Register() {
     };
 
     return (
-        <GuestLayout>
+        <div className="register-page">
             <Head title="Register" />
 
-            <form onSubmit={submit}>
-                <div>
-                    <InputLabel htmlFor="name" value="Name" />
+            <Nav />
 
-                    <TextInput
-                        id="name"
-                        name="name"
-                        value={data.name}
-                        className="mt-1 block w-full"
-                        autoComplete="name"
-                        isFocused={true}
-                        onChange={(e) => setData('name', e.target.value)}
-                        required
-                    />
+            {/* Conteneur principal */}
+            <div className="register-container">
+                {/* Panneau gauche - Formulaire */}
+                <div className="register-form-container">
+                    <div className="register-form-header">
+                        <h1>Welcome !</h1>
+                        <p>Please register now</p>
+                    </div>
 
-                    <InputError message={errors.name} className="mt-2" />
+                    <form onSubmit={submit} className="register-form">
+                        <div className="form-group">
+                            <label htmlFor="name" className="form-label">Username</label>
+                            <input
+                                id="name"
+                                type="text"
+                                name="name"
+                                value={data.name}
+                                className="form-input"
+                                autoComplete="name"
+                                autoFocus
+                                placeholder="Enter your username"
+                                onChange={(e) => setData('name', e.target.value)}
+                                required
+                            />
+                            {errors.name && (
+                                <div className="form-error">{errors.name}</div>
+                            )}
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="email" className="form-label">Email</label>
+                            <input
+                                id="email"
+                                type="email"
+                                name="email"
+                                value={data.email}
+                                className="form-input"
+                                autoComplete="username"
+                                placeholder="Enter your email"
+                                onChange={(e) => setData('email', e.target.value)}
+                                required
+                            />
+                            {errors.email && (
+                                <div className="form-error">{errors.email}</div>
+                            )}
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="password" className="form-label">Password</label>
+                            <input
+                                id="password"
+                                type="password"
+                                name="password"
+                                value={data.password}
+                                className="form-input"
+                                autoComplete="new-password"
+                                placeholder="Enter your password"
+                                onChange={(e) => setData('password', e.target.value)}
+                                required
+                            />
+                            {errors.password && (
+                                <div className="form-error">{errors.password}</div>
+                            )}
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="password_confirmation" className="form-label">
+                                Confirm Password
+                            </label>
+                            <input
+                                id="password_confirmation"
+                                type="password"
+                                name="password_confirmation"
+                                value={data.password_confirmation}
+                                className="form-input"
+                                autoComplete="new-password"
+                                placeholder="Confirm your password"
+                                onChange={(e) =>
+                                    setData('password_confirmation', e.target.value)
+                                }
+                                required
+                            />
+                            {errors.password_confirmation && (
+                                <div className="form-error">{errors.password_confirmation}</div>
+                            )}
+                        </div>
+
+                        <div className="newsletter-checkbox">
+                            <input
+                                type="checkbox"
+                                id="subscribe_newsletter"
+                                name="subscribe_newsletter"
+                                checked={data.subscribe_newsletter}
+                                onChange={(e) => setData('subscribe_newsletter', e.target.checked)}
+                            />
+                            <label htmlFor="subscribe_newsletter">Subscribe to newsletter</label>
+                        </div>
+
+                        <button type="submit" className="register-submit-btn" disabled={processing}>
+                            {processing ? 'Creating account...' : 'Register'}
+                        </button>
+
+                        <div className="login-link">
+                            Already have an account? <Link href={route('login')}>Login here</Link>
+                        </div>
+                    </form>
                 </div>
 
-                <div className="mt-4">
-                    <InputLabel htmlFor="email" value="Email" />
-
-                    <TextInput
-                        id="email"
-                        type="email"
-                        name="email"
-                        value={data.email}
-                        className="mt-1 block w-full"
-                        autoComplete="username"
-                        onChange={(e) => setData('email', e.target.value)}
-                        required
-                    />
-
-                    <InputError message={errors.email} className="mt-2" />
-                </div>
-
-                <div className="mt-4">
-                    <InputLabel htmlFor="password" value="Password" />
-
-                    <TextInput
-                        id="password"
-                        type="password"
-                        name="password"
-                        value={data.password}
-                        className="mt-1 block w-full"
-                        autoComplete="new-password"
-                        onChange={(e) => setData('password', e.target.value)}
-                        required
-                    />
-
-                    <InputError message={errors.password} className="mt-2" />
-                </div>
-
-                <div className="mt-4">
-                    <InputLabel
-                        htmlFor="password_confirmation"
-                        value="Confirm Password"
-                    />
-
-                    <TextInput
-                        id="password_confirmation"
-                        type="password"
-                        name="password_confirmation"
-                        value={data.password_confirmation}
-                        className="mt-1 block w-full"
-                        autoComplete="new-password"
-                        onChange={(e) =>
-                            setData('password_confirmation', e.target.value)
-                        }
-                        required
-                    />
-
-                    <InputError
-                        message={errors.password_confirmation}
-                        className="mt-2"
-                    />
-                </div>
-
-                <div className="mt-4 flex items-center justify-end">
-                    <Link
-                        href={route('login')}
-                        className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                    >
-                        Already registered?
+                {/* Panneau droit - Promotion */}
+                <div className="register-promo">
+                    <h2>You are new ?</h2>
+                    <h2>Create new account here</h2>
+                    <p>
+                        There are advances being made in science and technology everyday, 
+                        and a good example of this is the
+                    </p>
+                    <Link href={route('login')} className="login-account-btn">
+                        Already have an account?
                     </Link>
-
-                    <PrimaryButton className="ms-4" disabled={processing}>
-                        Register
-                    </PrimaryButton>
                 </div>
-            </form>
-        </GuestLayout>
+            </div>
+
+            <Footer />
+        </div>
     );
 }

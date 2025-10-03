@@ -3,9 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Contact;
+use App\Models\Mail as MailModel; // Alias pour éviter le conflit
 use App\Mail\ContactMessage;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Mail; // Pour envoyer les emails
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
@@ -37,29 +38,40 @@ class ContactController extends Controller
         ]);
 
         try {
-            // Récupérer l'adresse email de l'admin depuis la table contact
+            // SAUVEGARDER LE MESSAGE DANS LA TABLE MAILS
+            MailModel::create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'title' => $validated['subject'],
+                'message' => $validated['message'],
+                'archived' => false,
+            ]);
+
+            Log::info('Contact message saved to database', [
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'subject' => $validated['subject']
+            ]);
+
+            // ENVOYER L'EMAIL À L'ADMIN
             $contact = Contact::first();
             $adminEmail = $contact ? $contact->email : 'bxl.superstars@gmail.com';
-
-            // Envoyer l'email à l'admin
             Mail::to($adminEmail)->send(new ContactMessage($validated));
 
-            Log::info('Contact message sent successfully', [
+            Log::info('Contact message email sent', [
                 'from' => $validated['email'],
                 'to' => $adminEmail,
                 'subject' => $validated['subject']
             ]);
 
-            // RETOURNER à la page contact avec un message de succès
             return redirect()->back()->with('success', 'Votre message a été envoyé avec succès !');
 
         } catch (\Exception $e) {
-            Log::error('Failed to send contact message', [
+            Log::error('Failed to process contact message', [
                 'error' => $e->getMessage(),
                 'data' => $validated
             ]);
 
-            // RETOURNER à la page contact avec un message d'erreur
             return redirect()->back()->with('error', 'Une erreur est survenue lors de l\'envoi du message. Veuillez réessayer.');
         }
     }

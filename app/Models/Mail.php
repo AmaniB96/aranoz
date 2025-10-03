@@ -11,6 +11,7 @@ class Mail extends Model
 
     protected $fillable = [
         'name',
+        'email', 
         'title',
         'message',
         'archived'

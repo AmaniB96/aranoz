@@ -112,6 +112,9 @@ function NavAdmin() {
                                 <Link href="/profile" className="user-menu-item">
                                     <i className="fas fa-user"></i> Profile
                                 </Link>
+                                <Link href="/" className="user-menu-item">
+                                    <i className="fas fa-sign-out"></i> Return to Website
+                                </Link>
                                 <Link href="/logout" method="post" as="button" className="user-menu-item logout">
                                     <i className="fas fa-sign-out-alt"></i> Logout
                                 </Link>
