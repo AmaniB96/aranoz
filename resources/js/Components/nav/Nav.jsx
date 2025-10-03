@@ -133,7 +133,6 @@ export default function Nav() {
                 </div>
             </nav>
 
-            {/* toast */}
             <div className={`cart-toast ${toast.visible ? 'visible' : ''}`}>
                 {toast.image && <img src={toast.image} alt={toast.name} onError={(e)=> e.target.style.display='none'} />}
                 <div className="toast-text">

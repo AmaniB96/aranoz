@@ -11,11 +11,13 @@ class Cart extends Model
 
     protected $fillable = [
         'user_id',
-        'date'
+        'date',
+        'ordered_at'
     ];
 
     protected $casts = [
-        'date' => 'datetime'
+        'date' => 'datetime',
+        'ordered_at' => 'datetime'
     ];
 
     public function user()

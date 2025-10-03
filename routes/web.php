@@ -123,4 +123,13 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/blog/{id}/comment', [BlogCommentController::class, 'store'])->name('blog.comment.store');
 });
 
+// Routes pour le système de commandes (checkout et suivi)
+Route::middleware(['auth'])->group(function () {
+    Route::post('/checkout', [OrderController::class, 'checkout'])->name('checkout');
+    Route::get('/orders/success/{id}', [OrderController::class, 'success'])->name('orders.success');
+    Route::get('/orders/tracking', [OrderController::class, 'tracking'])->name('orders.tracking');
+    Route::get('/orders/history', [OrderController::class, 'history'])->name('orders.history');
+    Route::get('/orders/{id}', [OrderController::class, 'show'])->name('orders.show');
+});
+
 require __DIR__.'/auth.php';

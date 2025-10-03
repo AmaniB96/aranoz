@@ -12,7 +12,9 @@ class Order extends Model
     protected $fillable = [
         'date',
         'status',
-        'cart_id'
+        'cart_id',
+        'user_id',
+        'order_number'
     ];
 
     protected $casts = [
@@ -22,5 +24,10 @@ class Order extends Model
     public function cart()
     {
         return $this->belongsTo(Cart::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

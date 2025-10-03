@@ -63,6 +63,18 @@ export default function Edit({ mustVerifyEmail, status }) {
                             >
                                 Liked Products ({localLikedProducts.length})
                             </button>
+                            <button 
+                                className={`tab ${activeTab === 'tracking' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('tracking')}
+                            >
+                                Order Tracking
+                            </button>
+                            <button 
+                                className={`tab ${activeTab === 'history' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('history')}
+                            >
+                                Order History
+                            </button>
                         </div>
                     </div>
 
@@ -113,6 +125,50 @@ export default function Edit({ mustVerifyEmail, status }) {
                                             </Link>
                                         </div>
                                     )}
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === 'tracking' && (
+                            <div className="bg-white shadow sm:rounded-lg p-8">
+                                <div className="text-center">
+                                    <div className="mb-6">
+                                        <svg className="w-20 h-20 mx-auto text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                                        </svg>
+                                    </div>
+                                    <h3 className="text-2xl font-bold text-gray-900 mb-3">Track Your Orders</h3>
+                                    <p className="text-gray-600 mb-6">
+                                        View the status and details of all your pending orders
+                                    </p>
+                                    <Link
+                                        href="/orders/tracking"
+                                        className="inline-block bg-gradient-to-r from-pink-500 to-purple-600 text-white px-8 py-3 rounded-lg font-semibold hover:from-pink-600 hover:to-purple-700 transition-all shadow-lg"
+                                    >
+                                        Go to Order Tracking
+                                    </Link>
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === 'history' && (
+                            <div className="bg-white shadow sm:rounded-lg p-8">
+                                <div className="text-center">
+                                    <div className="mb-6">
+                                        <svg className="w-20 h-20 mx-auto text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                        </svg>
+                                    </div>
+                                    <h3 className="text-2xl font-bold text-gray-900 mb-3">Order History</h3>
+                                    <p className="text-gray-600 mb-6">
+                                        Review all your completed and delivered orders
+                                    </p>
+                                    <Link
+                                        href="/orders/history"
+                                        className="inline-block bg-gradient-to-r from-green-500 to-teal-600 text-white px-8 py-3 rounded-lg font-semibold hover:from-green-600 hover:to-teal-700 transition-all shadow-lg"
+                                    >
+                                        View Order History
+                                    </Link>
                                 </div>
                             </div>
                         )}

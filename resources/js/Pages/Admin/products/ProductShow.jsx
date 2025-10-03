@@ -148,7 +148,7 @@ export default function ProductShow({ product, flash }) {
                     <div className="stats-grid">
                         <div className="stat-item">
                             <strong>Cart Products:</strong>
-                            <span>{product.cart_products?.length || 0}</span>
+                            <span>{product.cartProducts?.length || 0}</span>
                         </div>
                         <div className="stat-item">
                             <strong>Liked by Users:</strong>

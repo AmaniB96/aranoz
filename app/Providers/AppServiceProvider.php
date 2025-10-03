@@ -35,7 +35,7 @@ class AppServiceProvider extends ServiceProvider
             if (! $cart) {
                 return 0;
             }
-            // sum quantities in cart_products
+            // sum quantities in cartProducts
             return $cart->cartProducts()->sum('quantity') ?? 0;
         });
     }
