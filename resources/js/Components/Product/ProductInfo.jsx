@@ -26,7 +26,7 @@ export default function ProductInfo({ product, qty, setQty, onAddToCart, onLike,
             </div>
 
             <ul className="meta-list">
-                <li><strong>Category</strong> : <Link href="#">{product.productCategory?.name ?? '—'}</Link></li>
+                <li><strong>Category</strong> : <Link href="#">{product.product_category?.name ?? '—'}</Link></li>
                 <li><strong>Availability</strong> : {inStock ? 'In Stock' : 'Out of stock'}</li>
             </ul>
 

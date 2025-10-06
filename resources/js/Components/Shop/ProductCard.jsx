@@ -9,7 +9,6 @@ export default function ProductCard({ product, onUnliked }) {
     const [likesCount, setLikesCount] = useState(product.liked_by_users_count || 0);
     const [isLiking, setIsLiking] = useState(false);
 
-    // Update local state if product liked status changes from parent
     useEffect(() => {
         setIsLiked(product.is_liked_by_user || false);
         setLikesCount(product.liked_by_users_count || 0);
@@ -84,17 +83,14 @@ export default function ProductCard({ product, onUnliked }) {
             preserveState: true,
             preserveScroll: true,
             onSuccess: (page) => {
-                // Toggle local state optimistically
                 const newLikedState = !isLiked;
                 setIsLiked(newLikedState);
                 setLikesCount(newLikedState ? likesCount + 1 : likesCount - 1);
                 
-                // If this product was unliked and we're in the profile page, notify parent
                 if (!newLikedState && onUnliked) {
                     onUnliked(product.id);
                 }
                 
-                // Show success message from flash
                 const flashSuccess = page.props.flash?.success;
                 if (flashSuccess) {
                     toast.success(flashSuccess, {
@@ -122,7 +118,6 @@ export default function ProductCard({ product, onUnliked }) {
         });
     };
 
-    // Calculate discounted price based on promo
     const discountedPrice = product.promo && product.promo.active && product.promo.discount 
         ? (product.price * (1 - product.promo.discount / 100)).toFixed(2) 
         : null;
@@ -146,23 +141,13 @@ export default function ProductCard({ product, onUnliked }) {
                         <img src={product.image_url} alt={product.name}
                             onError={(e) => { e.target.src = '/storage/products/default.png'; }} />
                         
-                        {/* Promo Badge */}
                         {product.promo && product.promo.active && product.promo.discount && (
                             <div className="promo-badge">
                                 -{product.promo.discount}%
                             </div>
                         )}
 
-                        {/* Like Button */}
-                        <button 
-                            onClick={handleLike}
-                            className={`like-btn ${isLiked ? 'liked' : ''} ${isLiking ? 'loading' : ''}`}
-                            disabled={isLiking}
-                            title={isLiked ? 'Unlike this product' : 'Like this product'}
-                        >
-                            <i className={isLiked ? 'fa-solid fa-heart' : 'fa-regular fa-heart'} 
-                               style={isLiked ? {color: '#de5445'} : {}}></i>
-                        </button>
+                       
                     </div>
                     <h3 className="product-name">{product.name}</h3>
                 </Link>

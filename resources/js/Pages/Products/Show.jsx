@@ -16,11 +16,6 @@ export default function Show() {
     const [likesCount, setLikesCount] = useState(product.liked_by_users_count || 0);
     const [isLiking, setIsLiking] = useState(false);
 
-    console.log('Product data:', product);
-    console.log('ProductDetail:', product.productDetail);
-    console.log('Best sellers:', bestSellers);
-    console.log('Is liked by user:', product.is_liked_by_user);
-
     const addToCart = async () => {
         if (!user) {
             if (confirm('You must be logged in to add products to cart. Go to login?')) {
@@ -190,14 +185,14 @@ export default function Show() {
                             <div className="spec-table">
                                 <table>
                                     <tbody>
-                                        <tr><td>Width</td><td>{product.productDetail?.width ?? '—'}</td></tr>
-                                        <tr><td>Height</td><td>{product.productDetail?.height ?? '—'}</td></tr>
-                                        <tr><td>Depth</td><td>{product.productDetail?.depth ?? '—'}</td></tr>
-                                        <tr><td>Weight</td><td>{product.productDetail?.weight ?? '—'}</td></tr>
-                                        <tr><td>Quality checking</td><td>{product.productDetail?.quality_checking ? 'yes' : 'no'}</td></tr>
-                                        <tr><td>Freshness Duration</td><td>{product.productDetail?.freshness_duration ?? '—'}</td></tr>
-                                        <tr><td>When packaging</td><td>{product.productDetail?.packaging_date ? product.productDetail.packaging_date : (product.productDetail?.box_content ?? '—')}</td></tr>
-                                        <tr><td>Each Box contains</td><td>{product.productDetail?.box_content ?? '—'}</td></tr>
+                                        <tr><td>Width</td><td>{product.product_detail?.width ?? '—'}</td></tr>
+                                        <tr><td>Height</td><td>{product.product_detail?.height ?? '—'}</td></tr>
+                                        <tr><td>Depth</td><td>{product.product_detail?.depth ?? '—'}</td></tr>
+                                        <tr><td>Weight</td><td>{product.product_detail?.weight ?? '—'}</td></tr>
+                                        <tr><td>Quality checking</td><td>{product.product_detail?.quality_checking ? 'yes' : 'no'}</td></tr>
+                                        <tr><td>Freshness Duration</td><td>{product.product_detail?.freshness_duration ?? '—'}</td></tr>
+                                        <tr><td>When packaging</td><td>{product.product_detail?.packaging_date ?? '—'}</td></tr>
+                                        <tr><td>Each Box contains</td><td>{product.product_detail?.box_content ?? '—'}</td></tr>
                                     </tbody>
                                 </table>
                             </div>
