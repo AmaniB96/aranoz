@@ -16,7 +16,7 @@ export default function BestSellers({ products = [] }) {
                     <div className="navigation">
                         <span className="nav-text">View</span>
                         <span className="separator">|</span>
-                        <span className="nav-text">Products</span>
+                        <span className="nav-text">Previous</span>
                     </div>
                 </div>
 

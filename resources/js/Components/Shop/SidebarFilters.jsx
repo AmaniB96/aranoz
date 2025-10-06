@@ -10,6 +10,8 @@ export default function SidebarFilters({ categories = [], colors = [], filters =
         sort: filters.sort || '',
     });
 
+    const [isOpen, setIsOpen] = useState(false);
+
     const updateState = (key, value) => {
         const newState = { ...state, [key]: value };
         setState(newState);
@@ -32,87 +34,74 @@ export default function SidebarFilters({ categories = [], colors = [], filters =
         onFilter(resetState);
     };
 
+    const toggleFilters = () => {
+        setIsOpen(!isOpen);
+    };
+
+    const closeFilters = () => {
+        setIsOpen(false);
+    };
+
     return (
-        <div className="sidebar-filters">
-            <div className="filter-block">
-                <h4>Product filters</h4>
-                <ul className="category-list">
-                    {categories.map(c => (
-                        <li key={c.id}>
-                            <button 
-                                type="button" 
-                                className={state.category == c.id ? 'active' : ''}
-                                onClick={() => updateState('category', state.category == c.id ? '' : c.id)}
-                            >
-                                {c.name}
-                            </button>
-                        </li>
-                    ))}
-                </ul>
-            </div>
+        <>
+            {/* Mobile Filters Toggle Button */}
+            <button className="mobile-filters-toggle" onClick={toggleFilters}>
+                <i className="fas fa-filter"></i> Filters
+            </button>
 
-            <div className="filter-block">
-                <h4 className='color-filter'>Color Filter</h4>
-                <ul className="color-list">
-                    {colors.map(c => (
-                        <li key={c.id}>
-                            <button 
-                                type="button" 
-                                className={state.color == c.id ? 'active' : ''}
-                                onClick={() => updateState('color', state.color == c.id ? '' : c.id)}
-                            >
-                                {c.name}
-                            </button>
-                        </li>
-                    ))}
-                </ul>
-            </div>
+            {/* Overlay for mobile */}
+            <div className={`filters-overlay ${isOpen ? 'open' : ''}`} onClick={closeFilters}></div>
 
-            {/* {showSearch && (
-                <div className="filter-block">
-                    <input 
-                        placeholder="Recherche" 
-                        value={state.search}
-                        onChange={e => setState(prev => ({ ...prev, search: e.target.value }))}
-                        onKeyDown={(e) => { if (e.key === 'Enter') onFilter(state); }}
-                        onBlur={() => onFilter(state)}
-                    />
-                </div>
-            )} */}
-
-            {/* <div className="filter-block price-range">
-                <input 
-                    placeholder="Min" 
-                    value={state.min_price} 
-                    onChange={e => handlePriceChange('min_price', e.target.value)} 
-                />
-                <input 
-                    placeholder="Max" 
-                    value={state.max_price} 
-                    onChange={e => handlePriceChange('max_price', e.target.value)} 
-                />
-            </div> */}
-{/* 
-            <div className="filter-block">
-                <select 
-                    value={state.sort || ''} 
-                    onChange={e => updateState('sort', e.target.value)}
-                >
-                    <option value="">Sort By</option>
-                    <option value="newest">Newest</option>
-                    <option value="price_asc">Price ↑</option>
-                    <option value="price_desc">Price ↓</option>
-                </select>
-            </div> */}
-
-            <div className="filter-actions">
-                <button 
-                    type="button" 
-                    onClick={handleReset}
-                >
-                    <b>Reset</b>
+            {/* Sidebar Filters */}
+            <div className={`sidebar-filters ${isOpen ? 'open' : ''}`}>
+                {/* Close button for mobile */}
+                <button className="filters-close-btn" onClick={closeFilters} style={{display: 'none'}}>
+                    <i className="fas fa-times"></i> Close Filters
                 </button>
+
+                <div className="filter-block">
+                    <h4>Product filters</h4>
+                    <ul className="category-list">
+                        {categories.map(c => (
+                            <li key={c.id}>
+                                <button 
+                                    type="button" 
+                                    className={state.category == c.id ? 'active' : ''}
+                                    onClick={() => updateState('category', state.category == c.id ? '' : c.id)}
+                                >
+                                    {c.name}
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+
+                <div className="filter-block">
+                    <h4 className='color-filter'>Color Filter</h4>
+                    <ul className="color-list">
+                        {colors.map(c => (
+                            <li key={c.id}>
+                                <button 
+                                    type="button" 
+                                    className={state.color == c.id ? 'active' : ''}
+                                    onClick={() => updateState('color', state.color == c.id ? '' : c.id)}
+                                >
+                                    {c.name}
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+
+                <div className="filter-actions">
+                    <button 
+                        type="button" 
+                        onClick={handleReset}
+                    >
+                        <b>Reset</b>
+                    </button>
+                </div>
             </div>
-        </div>
+        </>
     );
 }

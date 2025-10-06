@@ -1,7 +1,7 @@
 .weekly-sale {
     background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
     padding: 80px 0;
-    text-align: center;
+    text-align: end;
 }
 
 .sale-title {
@@ -14,7 +14,7 @@
 
 .countdown {
     display: flex;
-    justify-content: center;
+    justify-content: end;
     gap: 40px;
     margin-bottom: 40px;
 }
@@ -42,18 +42,14 @@
 
 .coupon-form {
     display: flex;
-    justify-content: center;
-    gap: 15px;
-    max-width: 500px;
-    margin: 0 auto;
+    justify-content: end;
 }
 
 .email-input {
-    flex: 1;
     padding: 15px 20px;
     border: 1px solid #ddd;
-    border-radius: 25px;
     font-size: 16px;
+    width: 250px;
     outline: none;
 }
 
@@ -63,10 +59,9 @@
 
 .subscribe-btn {
     padding: 15px 30px;
-    background: #007bff;
+    background: #dc3545;
     color: white;
     border: none;
-    border-radius: 25px;
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
@@ -90,8 +85,8 @@
         font-size: 36px;
     }
     
-    .coupon-form {
-        flex-direction: column;
-        max-width: 300px;
+
+    .email-input {
+        max-width: 150px;
     }
 }

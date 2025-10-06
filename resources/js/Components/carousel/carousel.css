@@ -123,4 +123,8 @@
     .slide-number {
         font-size: 6rem;
     }
+
+    .carousel-controls {
+        right: 18%;
+    }
 }

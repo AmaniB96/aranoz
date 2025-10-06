@@ -85,4 +85,7 @@
     .best-sellers .products-grid {
         grid-template-columns: 1fr;
     }
+    .product-image img {
+        object-fit: contain !important;
+    }
 }
