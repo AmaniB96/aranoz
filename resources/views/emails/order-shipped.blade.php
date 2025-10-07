@@ -44,7 +44,13 @@
             </table>
 
             <div class="total">
-                <strong>Order Total: ${{ number_format($total, 2) }}</strong>
+                <div class="total-breakdown">
+                    <p><strong>Sous-total :</strong> ${{ number_format($subtotal, 2) }}</p>
+                    @if($discount > 0)
+                    <p><strong>Réduction{{ $couponCode ? ' ('.$couponCode.')' : '' }} :</strong> -${{ number_format($discount, 2) }}</p>
+                    @endif
+                    <p class="final-total"><strong>Total de la commande : ${{ number_format($total, 2) }}</strong></p>
+                </div>
             </div>
 
             <div class="shipping-info">

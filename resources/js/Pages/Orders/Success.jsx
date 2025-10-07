@@ -4,7 +4,7 @@ import Nav from '@/Components/nav/Nav';
 import './orders.css';
 
 export default function Success() {
-    const { order, total } = usePage().props;
+    const { order, total, subtotal, discount, couponCode } = usePage().props;
     
     console.log('Order data:', order);
     console.log('Order items:', order.items);
@@ -38,8 +38,18 @@ export default function Success() {
                                 <span className="value status-pending">{order.status}</span>
                             </div>
                             <div className="info-item">
+                                <span className="label">Subtotal:</span>
+                                <span className="value">${subtotal}</span>
+                            </div>
+                            {discount > 0 && (
+                                <div className="info-item">
+                                    <span className="label">Discount ({couponCode}):</span>
+                                    <span className="value discount">-${discount}</span>
+                                </div>
+                            )}
+                            <div className="info-item">
                                 <span className="label">Total Amount:</span>
-                                <span className="value">${total}</span>
+                                <span className="value total">${total}</span>
                             </div>
                         </div>
                     </div>

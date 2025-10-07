@@ -380,6 +380,26 @@
     font-size: 16px;
 }
 
+/* Styles existants + ajouts pour les coupons */
+
+.order-discount {
+    font-size: 12px;
+    color: #28a745;
+    margin-top: 4px;
+}
+
+.discount {
+    color: #28a745 !important;
+    font-weight: 600;
+}
+
+.total {
+    color: #ff3b6b !important;
+    font-weight: 700;
+    font-size: 18px;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
     .success-page,
     .tracking-page,
@@ -413,5 +433,13 @@
         flex-direction: column;
         gap: 10px;
         align-items: flex-start;
+    }
+    
+    .order-total {
+        font-size: 16px;
+    }
+    
+    .order-discount small {
+        font-size: 11px;
     }
 }

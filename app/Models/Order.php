@@ -14,11 +14,19 @@ class Order extends Model
         'status',
         'cart_id',
         'user_id',
-        'order_number'
+        'order_number',
+        'coupon_id',
+        'subtotal',
+        'discount_amount',
+        'total',
+        'coupon_code'
     ];
 
     protected $casts = [
-        'date' => 'datetime'
+        'date' => 'datetime',
+        'subtotal' => 'decimal:2',
+        'discount_amount' => 'decimal:2',
+        'total' => 'decimal:2'
     ];
 
     public function cart()
@@ -29,5 +37,10 @@ class Order extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function coupon()
+    {
+        return $this->belongsTo(Coupon::class);
     }
 }

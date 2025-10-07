@@ -1,16 +1,38 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { usePage, Link, router } from '@inertiajs/react';
 import Nav from '@/Components/nav/Nav';
 import '@/Components/Cart/cart.css';
 
 export default function Index() {
-    const { items: initialItems = [], subtotal: initialSubtotal = 0 } = usePage().props;
+    const { items: initialItems = [], subtotal: initialSubtotal = 0, appliedCoupon: initialAppliedCoupon } = usePage().props;
     const [items, setItems] = useState(initialItems);
     const prevItemsRef = useRef(initialItems);
+
+    // États pour les coupons - INITIALISER AVEC LA VALEUR DU BACKEND
+    const [couponCode, setCouponCode] = useState('');
+    const [appliedCoupon, setAppliedCoupon] = useState(initialAppliedCoupon || null);
+    const [couponError, setCouponError] = useState('');
+    const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
 
     const subtotal = useMemo(() => {
         return items.reduce((s, it) => s + Number(it.total || (it.unit_price * it.quantity) || 0), 0);
     }, [items]);
+
+    // Calcul du total avec réduction
+    const discount = useMemo(() => {
+        if (!appliedCoupon || subtotal === 0) return 0;
+        
+        if (appliedCoupon.type === 'percentage') {
+            return (subtotal * appliedCoupon.value) / 100;
+        } else if (appliedCoupon.type === 'fixed') {
+            return Math.min(appliedCoupon.value, subtotal); // Ne pas dépasser le subtotal
+        }
+        return 0;
+    }, [appliedCoupon, subtotal]);
+
+    const total = useMemo(() => {
+        return Math.max(0, subtotal - discount);
+    }, [subtotal, discount]);
 
     const updateQty = async (id, qty) => {
         const prev = items;
@@ -93,6 +115,89 @@ export default function Index() {
         }
     };
 
+    // Fonction pour appliquer un coupon
+    const applyCoupon = async () => {
+        if (!couponCode.trim()) {
+            setCouponError('Please enter a coupon code');
+            return;
+        }
+
+        setIsApplyingCoupon(true);
+        setCouponError('');
+
+        const tokenMeta = document.querySelector('meta[name="csrf-token"]');
+        const csrf = tokenMeta?.content ?? null;
+        if (!csrf) {
+            setCouponError('CSRF token missing — refresh page');
+            setIsApplyingCoupon(false);
+            return;
+        }
+
+        try {
+            const res = await fetch('/cart/apply-coupon', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrf
+                },
+                body: JSON.stringify({ code: couponCode.trim() })
+            });
+
+            const json = await res.json();
+
+            if (!res.ok || !json.success) {
+                throw new Error(json.message || 'Invalid coupon code');
+            }
+
+            setAppliedCoupon(json.coupon);
+            setCouponCode('');
+            setCouponError('');
+        } catch (err) {
+            console.error(err);
+            setCouponError(err.message || 'Invalid coupon code');
+            setAppliedCoupon(null);
+        } finally {
+            setIsApplyingCoupon(false);
+        }
+    };
+
+    // Fonction pour retirer le coupon
+    const removeCoupon = async () => {
+        setIsApplyingCoupon(true);
+
+        const tokenMeta = document.querySelector('meta[name="csrf-token"]');
+        const csrf = tokenMeta?.content ?? null;
+        if (!csrf) {
+            setCouponError('CSRF token missing — refresh page');
+            setIsApplyingCoupon(false);
+            return;
+        }
+
+        try {
+            const res = await fetch('/cart/remove-coupon', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrf
+                }
+            });
+
+            const json = await res.json();
+
+            if (!res.ok || !json.success) {
+                throw new Error(json.message || 'Could not remove coupon');
+            }
+
+            setAppliedCoupon(null);
+            setCouponError('');
+        } catch (err) {
+            console.error(err);
+            setCouponError(err.message || 'Could not remove coupon');
+        } finally {
+            setIsApplyingCoupon(false);
+        }
+    };
+
     const handleCheckout = () => {
         if (items.length === 0) {
             alert('Your cart is empty');
@@ -101,7 +206,9 @@ export default function Index() {
 
         console.log('Attempting checkout...');
         
-        router.post('/checkout', {}, {
+        router.post('/checkout', {
+            coupon_code: appliedCoupon?.code
+        }, {
             onStart: () => {
                 console.log('Checkout request started');
             },
@@ -164,6 +271,49 @@ export default function Index() {
                         ))}
                     </div>
 
+                    {/* Section Coupon */}
+                    {items.length > 0 && (
+                        <div className="coupon-section">
+                            <h3>Have a coupon?</h3>
+                            <div className="coupon-form">
+                                <input
+                                    type="text"
+                                    placeholder="Enter coupon code"
+                                    value={couponCode}
+                                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                                    disabled={isApplyingCoupon || appliedCoupon}
+                                />
+                                {!appliedCoupon ? (
+                                    <button 
+                                        onClick={applyCoupon}
+                                        disabled={isApplyingCoupon || !couponCode.trim()}
+                                        className="btn-apply-coupon"
+                                    >
+                                        {isApplyingCoupon ? 'Applying...' : 'Apply'}
+                                    </button>
+                                ) : (
+                                    <button 
+                                        onClick={removeCoupon}
+                                        disabled={isApplyingCoupon}
+                                        className="btn-remove-coupon"
+                                    >
+                                        Remove
+                                    </button>
+                                )}
+                            </div>
+                            {couponError && <div className="coupon-error">{couponError}</div>}
+                            {appliedCoupon && (
+                                <div className="coupon-success">
+                                    Coupon <strong>{appliedCoupon.code}</strong> applied! 
+                                    {appliedCoupon.type === 'percentage' 
+                                        ? `${appliedCoupon.value}% off`
+                                        : `$${appliedCoupon.value} off`
+                                    }
+                                </div>
+                            )}
+                        </div>
+                    )}
+
                     <div className="cart-footer">
                         <div className="continue">
                             <Link href="/shop" className="btn-secondary">Continue Shopping</Link>
@@ -174,6 +324,19 @@ export default function Index() {
                                 <span>Subtotal</span>
                                 <strong>${subtotal.toFixed(2)}</strong>
                             </div>
+                            
+                            {appliedCoupon && discount > 0 && (
+                                <div className="discount">
+                                    <span>Discount ({appliedCoupon.code})</span>
+                                    <strong>-${discount.toFixed(2)}</strong>
+                                </div>
+                            )}
+                            
+                            <div className="total">
+                                <span>Total</span>
+                                <strong>${total.toFixed(2)}</strong>
+                            </div>
+                            
                             <div className="actions">
                                 <Link href="/shop" className="btn-secondary">Continue Shopping</Link>
                                 <button 

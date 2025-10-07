@@ -1,0 +1,265 @@
+.coupons-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.coupons-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.coupons-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #333;
+    margin: 0;
+}
+
+.create-coupon-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.create-coupon-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    color: white;
+    text-decoration: none;
+}
+
+.success-message {
+    background: #d4edda;
+    color: #155724;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 1px solid #c3e6cb;
+}
+
+.coupons-table {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.coupons-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.coupons-table thead {
+    background: #f8f9fa;
+}
+
+.coupons-table th {
+    padding: 16px 20px;
+    text-align: left;
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.coupons-table td {
+    padding: 16px 20px;
+    border-bottom: 1px solid #f0f0f0;
+    color: #666;
+    font-size: 14px;
+}
+
+.coupons-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.coupon-code {
+    background: #f8f9fa;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+    color: #ff3b6b;
+    font-size: 13px;
+}
+
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-badge.active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-badge.inactive {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.status-badge.expired {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-badge.used {
+    background: #e2e3e5;
+    color: #383d41;
+}
+
+.actions-cell {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.action-btn {
+    padding: 6px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.view-btn {
+    background: #17a2b8;
+    color: white;
+}
+
+.view-btn:hover {
+    background: #138496;
+    color: white;
+    text-decoration: none;
+}
+
+.edit-btn {
+    background: #ffc107;
+    color: #212529;
+}
+
+.edit-btn:hover {
+    background: #e0a800;
+    color: #212529;
+    text-decoration: none;
+}
+
+.delete-btn {
+    background: #dc3545;
+    color: white;
+}
+
+.delete-btn:hover {
+    background: #c82333;
+    color: white;
+}
+
+.delete-btn:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .coupons-container {
+        padding: 15px;
+    }
+
+    .coupons-header {
+        flex-direction: column;
+        gap: 20px;
+        align-items: flex-start;
+    }
+
+    .coupons-title {
+        font-size: 24px;
+    }
+
+    .coupons-table {
+        overflow-x: auto;
+    }
+
+    .coupons-table table {
+        min-width: 800px;
+    }
+}
+
+@media (max-width: 768px) {
+    .coupons-container {
+        padding: 10px;
+    }
+
+    .coupons-title {
+        font-size: 20px;
+    }
+
+    .create-coupon-btn {
+        padding: 10px 20px;
+        font-size: 13px;
+    }
+
+    .coupons-table th,
+    .coupons-table td {
+        padding: 12px 10px;
+        font-size: 13px;
+    }
+
+    .actions-cell {
+        flex-direction: column;
+        gap: 4px;
+        align-items: stretch;
+    }
+
+    .action-btn {
+        padding: 8px 12px;
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 480px) {
+    .coupons-title {
+        font-size: 18px;
+    }
+
+    .coupons-table th,
+    .coupons-table td {
+        padding: 8px 6px;
+        font-size: 12px;
+    }
+
+    .coupon-code {
+        font-size: 11px;
+        padding: 2px 6px;
+    }
+
+    .status-badge {
+        padding: 2px 8px;
+        font-size: 10px;
+    }
+
+    .action-btn {
+        padding: 6px 8px;
+        font-size: 10px;
+    }
+}

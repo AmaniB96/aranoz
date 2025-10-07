@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cart;
-use App\Models\CartProduct;
+use App\Models\Coupon;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
 use Inertia\Inertia;
 
 class CartController extends Controller
@@ -50,9 +52,13 @@ class CartController extends Controller
             }
         }
 
+        // AJOUT : Récupérer le coupon appliqué depuis la session
+        $appliedCoupon = Session::get('applied_coupon');
+
         return Inertia::render('Cart/Index', [
             'items' => $items,
             'subtotal' => round($subtotal, 2),
+            'appliedCoupon' => $appliedCoupon, // AJOUT
         ]);
     }
 
@@ -142,6 +148,98 @@ class CartController extends Controller
             'success' => true,
             'cartCount' => $cartCount,
             'removedName' => $productName,
+        ]);
+    }
+
+    // NOUVELLES MÉTHODES POUR LES COUPONS
+    public function applyCoupon(Request $request)
+    {
+        $request->validate([
+            'code' => 'required|string|max:50',
+        ]);
+
+        $user = Auth::user();
+        $code = strtoupper(trim($request->code));
+
+        // Vérifier si le coupon existe et est valide
+        $coupon = Coupon::where('code', $code)->first();
+
+        if (!$coupon || !$coupon->isValid()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid or expired coupon code',
+            ], 400);
+        }
+
+        // Calculer le subtotal actuel pour vérifier le montant minimum
+        $cart = Cart::where('user_id', $user->id)->whereNull('ordered_at')->first();
+        $subtotal = 0;
+        
+        if ($cart) {
+            foreach ($cart->cartProducts as $cp) {
+                $product = $cp->product;
+                $unitPrice = $product->price;
+                if ($product->promo && ($product->promo->active ?? false) && isset($product->promo->discount)) {
+                    $unitPrice = round($unitPrice - ($unitPrice * $product->promo->discount / 100), 2);
+                }
+                $subtotal += round($unitPrice * $cp->quantity, 2);
+            }
+        }
+
+        // Vérifier le montant minimum d'achat
+        if ($coupon->min_purchase_amount && $subtotal < $coupon->min_purchase_amount) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Minimum purchase amount of $' . $coupon->min_purchase_amount . ' required.',
+            ], 400);
+        }
+
+        // Déterminer le type et la valeur du coupon
+        $type = null;
+        $value = null;
+        
+        if ($coupon->discount_percentage) {
+            $type = 'percentage';
+            $value = $coupon->discount_percentage;
+        } elseif ($coupon->discount_amount) {
+            $type = 'fixed';
+            $value = $coupon->discount_amount;
+        }
+
+        if (!$type || !$value) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid coupon configuration',
+            ], 400);
+        }
+
+        // Stocker le coupon dans la session
+        Session::put('applied_coupon', [
+            'id' => $coupon->id,
+            'code' => $coupon->code,
+            'type' => $type,
+            'value' => $value,
+            'category_id' => null, // Pour compatibilité
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'coupon' => [
+                'id' => $coupon->id,
+                'code' => $coupon->code,
+                'type' => $type,
+                'value' => $value,
+                'category_id' => null,
+            ],
+        ]);
+    }
+
+    public function removeCoupon(Request $request)
+    {
+        Session::forget('applied_coupon');
+
+        return response()->json([
+            'success' => true,
         ]);
     }
 }

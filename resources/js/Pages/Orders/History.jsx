@@ -71,7 +71,14 @@ export default function History() {
                                 </div>
 
                                 <div className="order-total">
-                                    ${order.total}
+                                    ${order.total} 
+                                    {order.discount > 0 && order.coupon_code && (
+                                        <div className="order-discount">
+                                            <small className="text-green-600">
+                                                -${order.discount} ({order.coupon_code})
+                                            </small>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="order-actions">

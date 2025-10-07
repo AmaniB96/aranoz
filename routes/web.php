@@ -3,6 +3,7 @@
 use App\Http\Controllers\BlogCommentController;
 use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\CouponController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ShopController;
@@ -58,6 +59,15 @@ Route::middleware(['auth', 'role:webmaster,admin'])->group(function () {
     Route::delete('/admin/products/{id}', [ProductController::class, 'destroy'])->name('products.destroy');
     Route::post('/admin/products/{id}/toggle-pin', [ProductController::class, 'togglePin'])->name('products.togglePin');
     
+    // Coupons routes
+    Route::get('/admin/coupons', [CouponController::class, 'index'])->name('coupons.index');
+    Route::get('/admin/coupons/create', [CouponController::class, 'create'])->name('coupons.create');
+    Route::post('/admin/coupons', [CouponController::class, 'store'])->name('coupons.store');
+    Route::get('/admin/coupons/{id}', [CouponController::class, 'show'])->name('coupons.show');
+    Route::get('/admin/coupons/{id}/edit', [CouponController::class, 'edit'])->name('coupons.edit');
+    Route::put('/admin/coupons/{id}', [CouponController::class, 'update'])->name('coupons.update');
+    Route::delete('/admin/coupons/{id}', [CouponController::class, 'destroy'])->name('coupons.destroy');
+    
     Route::get('/admin/contact', [ContactController::class, 'index'])->name('contact');
     Route::put('/admin/contact/{id}', [ContactController::class, 'update'])->name('contactUpdate');
 });
@@ -94,9 +104,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
     Route::post('/cart/update/{id}', [CartController::class, 'update'])->name('cart.update');
     Route::delete('/cart/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
+    
+    Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon'])->name('cart.apply-coupon');
+    Route::post('/cart/remove-coupon', [CartController::class, 'removeCoupon'])->name('cart.remove-coupon');
 });
 
-// Routes pour les produits likés
 Route::middleware(['auth'])->group(function () {
     Route::post('/products/{productId}/like', [LikedProductController::class, 'toggle'])->name('products.like');
     Route::get('/user/liked-products', [LikedProductController::class, 'userIndex'])->name('user.liked-products');
@@ -135,5 +147,8 @@ Route::middleware(['auth'])->group(function () {
 
 Route::get('/contact', [ContactController::class, 'publicIndex'])->name('contact');
 Route::post('/contact/send-message', [ContactController::class, 'sendMessage'])->name('contact.send-message');
+
+// API route for coupon validation
+Route::post('/api/coupons/validate', [CouponController::class, 'validateCoupon'])->name('api.coupons.validate');
 
 require __DIR__.'/auth.php';

@@ -9,5 +9,6 @@
         .total { font-size: 18px; font-weight: bold; color: #059669; text-align: right; margin-top: 20px; }
         .shipping-info { background: #e0f2fe; padding: 20px; margin: 20px 0; border-radius: 8px; border-left: 4px solid #0284c7; }
         .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
-        .btn { display: inline-block; background: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 10px 0; }
-        .tracking-btn { background: #0284c7; }
+        .total-breakdown { text-align: right; }
+        .total-breakdown p { margin: 5px 0; font-size: 16px; }
+        .total-breakdown .final-total { font-size: 18px; color: #059669; border-top: 2px solid #eee; padding-top: 10px; margin-top: 10px; }

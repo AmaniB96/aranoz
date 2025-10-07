@@ -13,7 +13,7 @@ class DatabaseSeeder extends Seeder
     {
         // Appeler les seeders dans l'ordre des dépendances
         $this->call([
-            RoleSeeder::class
+            CouponSeeder::class,
         ]);
     }
 }

@@ -4,7 +4,7 @@ import Nav from '@/Components/nav/Nav';
 import './orders.css';
 
 export default function Show() {
-    const { order, total } = usePage().props;
+    const { order, total, subtotal, discount, couponCode } = usePage().props; // AJOUT DES NOUVELLES PROPS
 
     console.log('Show order:', order);
 
@@ -41,10 +41,22 @@ export default function Show() {
                                     {order.status === 'pending' ? 'Pending' : 'Confirmed'}
                                 </span>
                             </div>
+                            {subtotal && (
+                                <div className="info-item">
+                                    <span className="label">Subtotal:</span>
+                                    <span className="value">${subtotal}</span>
+                                </div>
+                            )}
+                            {discount > 0 && couponCode && (
+                                <div className="info-item">
+                                    <span className="label">Discount ({couponCode}):</span>
+                                    <span className="value discount">-${discount}</span>
+                                </div>
+                            )}
                             <div className="info-item">
                                 <span className="label">Total Amount:</span>
-                                <span className="value text-2xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
-                                    ${parseFloat(total).toFixed(2)}
+                                <span className="value total text-2xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
+                                    ${total}
                                 </span>
                             </div>
                         </div>

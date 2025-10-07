@@ -16,15 +16,21 @@ class OrderConfirmation extends Mailable
     public $order;
     public $items;
     public $total;
+    public $subtotal;
+    public $discount;
+    public $couponCode;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(Order $order, $items, $total)
+    public function __construct(Order $order, $items, $total, $subtotal = null, $discount = null, $couponCode = null)
     {
         $this->order = $order;
         $this->items = $items;
         $this->total = $total;
+        $this->subtotal = $subtotal ?? $order->subtotal;
+        $this->discount = $discount ?? $order->discount_amount;
+        $this->couponCode = $couponCode ?? $order->coupon_code;
     }
 
     /**
@@ -48,6 +54,9 @@ class OrderConfirmation extends Mailable
                 'order' => $this->order,
                 'items' => $this->items,
                 'total' => $this->total,
+                'subtotal' => $this->subtotal,
+                'discount' => $this->discount,
+                'couponCode' => $this->couponCode,
             ],
         );
     }
