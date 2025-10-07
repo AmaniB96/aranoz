@@ -18,8 +18,16 @@ class WelcomeController extends Controller
         // Categories (4 principales)
         $categories = ProductCategory::take(4)->get();
 
-        // Section Awesome: tous les produits
-        $products = Product::all();
+        // Section Awesome: tous les produits avec promos
+        $products = Product::with('promo')->get();
+
+        // Calculer les prix réduits pour tous les produits
+        $products->each(function($product) {
+            if ($product->promo && $product->promo->active && $product->promo->discount) {
+                $product->discounted_price = round($product->price * (1 - $product->promo->discount / 100), 2);
+                $product->discount_percent = $product->promo->discount;
+            }
+        });
 
         // Weekly Sale: produit avec promo active
         $weeklyProduct = Product::whereHas('promo', function($query) {

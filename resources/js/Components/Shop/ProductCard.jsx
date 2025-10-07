@@ -118,9 +118,7 @@ export default function ProductCard({ product, onUnliked }) {
         });
     };
 
-    const discountedPrice = product.promo && product.promo.active && product.promo.discount 
-        ? (product.price * (1 - product.promo.discount / 100)).toFixed(2) 
-        : null;
+    const discountedPrice = product.discounted_price;
 
     return (
         <>

@@ -18,5 +18,23 @@ class PromoSeeder extends Seeder
             'discount' => 20.00,
             'active' => true,
         ]);
+
+        Promo::create([
+            'name' => 'Soldes été',
+            'discount' => 15.00,
+            'active' => true,
+        ]);
+
+        Promo::create([
+            'name' => 'Clearance',
+            'discount' => 30.00,
+            'active' => true,
+        ]);
+
+        Promo::create([
+            'name' => 'Promo inactive',
+            'discount' => 10.00,
+            'active' => false, // Pour tester les promos inactives
+        ]);
     }
 }

@@ -4,7 +4,7 @@ import Nav from '@/Components/nav/Nav';
 import './orders.css';
 
 export default function Show() {
-    const { order, total, subtotal, discount, couponCode } = usePage().props; // AJOUT DES NOUVELLES PROPS
+    const { order, total, subtotal, discount, couponCode } = usePage().props;
 
     console.log('Show order:', order);
 

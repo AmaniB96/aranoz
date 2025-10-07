@@ -55,10 +55,10 @@ export default function AwesomeSection({ products }) {
                             <div className="product-info">
                                 <h3 className="product-name">{product.name}</h3>
                                 <div className="product-price">
-                                    {product.promo_id ? (
+                                    {product.discounted_price ? (
                                         <>
                                             <span className="original-price">${product.price}</span>
-                                            <span className="discounted-price">${product.promo_id}</span>
+                                            <span className="discounted-price">${product.discounted_price}</span>
                                         </>
                                     ) : (
                                         <span className="price">${product.price}</span>

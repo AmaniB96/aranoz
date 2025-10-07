@@ -10,6 +10,7 @@ use App\Http\Controllers\ShopController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\PromoController;
 use App\Http\Controllers\MailController;
 use App\Http\Controllers\WelcomeController;
 use App\Http\Controllers\MainController; // AJOUT
@@ -68,6 +69,14 @@ Route::middleware(['auth', 'role:webmaster,admin'])->group(function () {
     Route::put('/admin/coupons/{id}', [CouponController::class, 'update'])->name('coupons.update');
     Route::delete('/admin/coupons/{id}', [CouponController::class, 'destroy'])->name('coupons.destroy');
     
+    // Promos routes
+    Route::get('/admin/promos', [PromoController::class, 'index'])->name('promos.index');
+    Route::get('/admin/promos/create', [PromoController::class, 'create'])->name('promos.create');
+    Route::post('/admin/promos', [PromoController::class, 'store'])->name('promos.store');
+    Route::get('/admin/promos/{id}', [PromoController::class, 'show'])->name('promos.show');
+    Route::get('/admin/promos/{id}/edit', [PromoController::class, 'edit'])->name('promos.edit');
+    Route::put('/admin/promos/{id}', [PromoController::class, 'update'])->name('promos.update');
+    Route::delete('/admin/promos/{id}', [PromoController::class, 'destroy'])->name('promos.destroy');
     Route::get('/admin/contact', [ContactController::class, 'index'])->name('contact');
     Route::put('/admin/contact/{id}', [ContactController::class, 'update'])->name('contactUpdate');
 });

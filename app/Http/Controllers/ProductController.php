@@ -80,6 +80,17 @@ class ProductController extends Controller
             'box_content' => 'nullable|string'
         ]);
 
+        // CORRECTION : Traitement spécial pour les champs vides
+        $processedData = [];
+        foreach ($validatedData as $key => $value) {
+            // Convertir les chaînes vides en null pour certains champs
+            if (in_array($key, ['width', 'height', 'depth', 'weight', 'freshness_duration', 'packaging_date', 'box_content', 'promo_id'])) {
+                $processedData[$key] = ($value === '' || $value === null) ? null : $value;
+            } else {
+                $processedData[$key] = $value;
+            }
+        }
+
         // Prepare image data for processing
         $imageData = [
             'front' => $request->file('image_front') ?: $request->input('image_front_url'),
@@ -91,12 +102,12 @@ class ProductController extends Controller
         // Process images
         $processedImages = $this->imageService->processProductImages($imageData);
 
-        $productData = collect($validatedData)->except([
+        $productData = collect($processedData)->except([
             'width', 'height', 'depth', 'weight', 'quality_checking', 'freshness_duration', 'packaging_date', 'box_content',
             'image_front', 'image_front_url', 'image_left', 'image_left_url', 'image_right', 'image_right_url', 'image_bonus', 'image_bonus_url'
         ])->merge($processedImages)->toArray();
 
-        $productDetailData = collect($validatedData)->only(['width', 'height', 'depth', 'weight', 'quality_checking', 'freshness_duration', 'packaging_date', 'box_content'])->toArray();
+        $productDetailData = collect($processedData)->only(['width', 'height', 'depth', 'weight', 'quality_checking', 'freshness_duration', 'packaging_date', 'box_content'])->toArray();
 
         $product = Product::create($productData);
 
@@ -109,13 +120,43 @@ class ProductController extends Controller
     }
 
     public function edit($id) {
-        $product = Product::with('productDetail')->findOrFail($id);
+        $product = Product::with(['productDetail', 'productCategory', 'color', 'promo'])->findOrFail($id); // AJOUT : toutes les relations
         $categories = ProductCategory::all();
         $colors = Color::all();
         $promos = Promo::all();
 
+        // Préparer les données du produit pour le frontend
+        $productData = [
+            'id' => $product->id,
+            'name' => $product->name,
+            'description' => $product->description,
+            'price' => $product->price,
+            'stock' => $product->stock,
+            'isPinned' => $product->isPinned,
+            'available' => $product->available,
+            'product_category_id' => $product->product_category_id,
+            'color_id' => $product->color_id,
+            'promo_id' => $product->promo_id,
+            // Images avec chemins complets
+            'image_front' => $product->image_front,
+            'image_left' => $product->image_left,
+            'image_right' => $product->image_right,
+            'image_bonus' => $product->image_bonus,
+            // Détails produit
+            'productDetail' => $product->productDetail ? [
+                'width' => $product->productDetail->width,
+                'height' => $product->productDetail->height,
+                'depth' => $product->productDetail->depth,
+                'weight' => $product->productDetail->weight,
+                'quality_checking' => $product->productDetail->quality_checking,
+                'freshness_duration' => $product->productDetail->freshness_duration,
+                'packaging_date' => $product->productDetail->packaging_date,
+                'box_content' => $product->productDetail->box_content,
+            ] : null,
+        ];
+
         return Inertia::render('Admin/products/ProductEdit', [
-            'product' => $product,
+            'product' => $productData, // DONNÉES FORMATÉES
             'categories' => $categories,
             'colors' => $colors,
             'promos' => $promos
@@ -143,16 +184,27 @@ class ProductController extends Controller
             'product_category_id' => 'required|exists:product_categories,id',
             'color_id' => 'required|exists:colors,id',
             'promo_id' => 'nullable|exists:promos,id',
-            // ProductDetail fields
+            // ProductDetail fields - CORRECTION : Accepter null ou string
             'width' => 'nullable|numeric|min:0',
             'height' => 'nullable|numeric|min:0',
             'depth' => 'nullable|numeric|min:0',
             'weight' => 'nullable|numeric|min:0',
             'quality_checking' => 'boolean',
-            'freshness_duration' => 'nullable|string|max:255',
+            'freshness_duration' => 'nullable|string|max:255', // CORRECTION : permettre null ou string vide
             'packaging_date' => 'nullable|date',
             'box_content' => 'nullable|string'
         ]);
+
+        // CORRECTION : Traitement spécial pour les champs vides
+        $processedData = [];
+        foreach ($validatedData as $key => $value) {
+            // Convertir les chaînes vides en null pour certains champs
+            if (in_array($key, ['width', 'height', 'depth', 'weight', 'freshness_duration', 'packaging_date', 'box_content', 'promo_id'])) {
+                $processedData[$key] = ($value === '' || $value === null) ? null : $value;
+            } else {
+                $processedData[$key] = $value;
+            }
+        }
 
         // Prepare image data for processing
         $imageData = [
@@ -165,22 +217,32 @@ class ProductController extends Controller
         // Process images (pass existing image name for updates)
         $processedImages = $this->imageService->processProductImages($imageData, $product->image_front);
 
-        $productData = collect($validatedData)->except([
+        $productData = collect($processedData)->except([
             'width', 'height', 'depth', 'weight', 'quality_checking', 'freshness_duration', 'packaging_date', 'box_content',
             'image_front', 'image_front_url', 'image_left', 'image_left_url', 'image_right', 'image_right_url', 'image_bonus', 'image_bonus_url'
         ])->merge($processedImages)->toArray();
 
-        $productDetailData = collect($validatedData)->only(['width', 'height', 'depth', 'weight', 'quality_checking', 'freshness_duration', 'packaging_date', 'box_content'])->toArray();
+        $productDetailData = collect($processedData)->only(['width', 'height', 'depth', 'weight', 'quality_checking', 'freshness_duration', 'packaging_date', 'box_content'])->toArray();
 
         $product->update($productData);
 
+        // Vérifier si au moins un champ productDetail a une valeur
+        $hasProductDetails = collect($productDetailData)->contains(function ($value, $key) {
+            // Pour les booléens, false est une valeur valide
+            if ($key === 'quality_checking') {
+                return true; // Toujours considérer comme ayant une valeur
+            }
+            // Pour les autres champs, vérifier qu'ils ne sont pas null/vide
+            return $value !== null && $value !== '';
+        });
+
         if ($product->productDetail) {
-            if (!empty(array_filter($productDetailData))) {
+            if ($hasProductDetails) {
                 $product->productDetail->update($productDetailData);
             } else {
                 $product->productDetail->delete();
             }
-        } elseif (!empty(array_filter($productDetailData))) {
+        } elseif ($hasProductDetails) {
             $productDetailData['product_id'] = $product->id;
             ProductDetail::create($productDetailData);
         }
@@ -226,6 +288,12 @@ class ProductController extends Controller
         $product->is_liked_by_user = $user ? $product->likedByUsers()->where('user_id', $user->id)->exists() : false;
         $product->liked_by_users_count = $product->likedByUsers()->count();
 
+        // Calculer les propriétés de promo pour ProductInfo
+        if ($product->promo && $product->promo->active && $product->promo->discount) {
+            $product->discounted_price = round($product->price * (1 - $product->promo->discount / 100), 2);
+            $product->discount_percent = $product->promo->discount;
+        }
+
         // Récupérer les best sellers (produits les plus populaires ou épinglés)
         $bestSellers = Product::with(['promo'])
             ->where('available', true)
@@ -235,17 +303,23 @@ class ProductController extends Controller
             ->take(4)
             ->get()
             ->map(function ($product) use ($user) {
-                return [
+                $data = [
                     'id' => $product->id,
                     'name' => $product->name,
                     'price' => $product->price,
                     'image_front' => $product->image_front,
                     'image_url' => $product->image_front ? "/storage/products/card/{$product->image_front}" : '/storage/products/default.png',
-                    'promo_price' => $product->promo ? $product->promo->discount_amount : null,
-                    'promo_percentage' => $product->promo ? $product->promo->discount_percentage : null,
                     'is_liked_by_user' => $user ? $product->likedByUsers()->where('user_id', $user->id)->exists() : false,
                     'liked_by_users_count' => $product->likedByUsers()->count(),
                 ];
+
+                // Calcul uniforme des promos pour BestSellers
+                if ($product->promo && $product->promo->active && $product->promo->discount) {
+                    $data['discounted_price'] = round($product->price * (1 - $product->promo->discount / 100), 2);
+                    $data['discount_percent'] = $product->promo->discount;
+                }
+
+                return $data;
             });
 
         return Inertia::render('Products/Show', [
