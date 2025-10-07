@@ -83,12 +83,10 @@ export default function Show() {
             preserveState: true,
             preserveScroll: true,
             onSuccess: (page) => {
-                // Toggle local state optimistically
                 const newLikedState = !isLiked;
                 setIsLiked(newLikedState);
                 setLikesCount(newLikedState ? likesCount + 1 : likesCount - 1);
                 
-                // Show success message from flash
                 const flashSuccess = page.props.flash?.success;
                 if (flashSuccess) {
                     toast.success(flashSuccess, {
