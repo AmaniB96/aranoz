@@ -40,7 +40,7 @@ export default function Edit({ mustVerifyEmail, status }) {
                             <div className="user-avatar">
                                 <i className="fas fa-user-circle"></i>
                             </div>
-                            <div className="user-info">
+                            <div className="users-info">
                                 <h1>{user?.name}</h1>
                                 <p>{user?.email}</p>
                                 <span className="member-since">

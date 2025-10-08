@@ -19,11 +19,38 @@
     align-items: center;
     justify-content: space-between;
     margin-bottom: 60px;
+    /* Ajout de la transition */
+    animation: fadeInSlide 0.6s ease-in-out;
+}
+
+/* Animation fade in avec slide */
+@keyframes fadeInSlide {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
 .slide-text {
     flex: 1;
     max-width: 500px;
+    /* Animation pour le texte */
+    animation: fadeInUp 0.8s ease-in-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .slide-text h1 {
@@ -32,6 +59,8 @@
     color: #333;
     margin-bottom: 20px;
     line-height: 1.2;
+    /* Délai pour l'animation du titre */
+    animation: fadeInUp 0.8s ease-in-out 0.2s both;
 }
 
 .slide-text p {
@@ -39,6 +68,8 @@
     color: #666;
     line-height: 1.6;
     margin-bottom: 0;
+    /* Délai pour l'animation de la description */
+    animation: fadeInUp 0.8s ease-in-out 0.4s both;
 }
 
 .slide-image {
@@ -47,6 +78,19 @@
     justify-content: center;
     align-items: center;
     position: relative;
+    /* Animation pour l'image */
+    animation: scaleIn 0.8s ease-in-out;
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
 .slide-image img {
@@ -54,6 +98,12 @@
     max-height: 400px;
     object-fit: contain;
     filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.1));
+    /* Transition smooth pour l'image */
+    transition: transform 0.3s ease;
+}
+
+.slide-image img:hover {
+    transform: scale(1.05);
 }
 
 .slide-number {
@@ -62,7 +112,18 @@
     right: -20px;
     font-size: 8rem;
     font-weight: bold;
-    color: rgba(255, 255, 255, 0.3);
+    color: rgba(255, 255, 255, 0.886);
+    /* Animation pour le numéro */
+    animation: fadeIn 1s ease-in-out 0.3s both;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 0.3;
+    }
 }
 
 .carousel-controls {

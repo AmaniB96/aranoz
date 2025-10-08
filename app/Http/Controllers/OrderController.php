@@ -189,11 +189,14 @@ class OrderController extends controller
         DB::beginTransaction();
 
         try {
+            // GÉNÉRER UN NUMÉRO DE COMMANDE STRUCTURÉ
+            $orderNumber = $this->generateOrderNumber();
+
             // Créer la commande
             $order = Order::create([
                 'user_id' => $user->id,
                 'cart_id' => $cart->id,
-                'order_number' => 'ORD-' . strtoupper(uniqid()),
+                'order_number' => $orderNumber,
                 'status' => 'pending',
                 'total' => $validatedData['total'],
                 'subtotal' => $validatedData['subtotal'],
@@ -346,8 +349,8 @@ class OrderController extends controller
             $total = $finalTotal; // Pour compatibilité avec le code existant
             Log::info('Final total calculated: ' . $total);
             
-            // Generate unique order number
-            $orderNumber = 'ORD-' . strtoupper(uniqid());
+            // GÉNÉRER UN NUMÉRO DE COMMANDE STRUCTURÉ
+            $orderNumber = $this->generateOrderNumber();
             
             Log::info('Order number generated: ' . $orderNumber);
             
@@ -562,5 +565,20 @@ class OrderController extends controller
             Log::error('Failed to send shipping confirmation email for order ' . $order->id . ': ' . $e->getMessage());
             // Ne pas échouer la mise à jour du statut si l'email échoue
         }
+    }
+
+
+    private function generateOrderNumber()
+    {
+        $lastOrder = Order::orderBy('id', 'desc')->first();
+        $nextNumber = $lastOrder ? $lastOrder->id + 1 : 1;
+        
+        $prefix = 'ARAZ';
+        $type = 'ORD';
+        $date = date('Ymd'); // Format: 20251008
+        $randomCode = strtoupper(substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ'), 0, 2));
+        $sequentialNumber = str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
+        
+        return "{$prefix}-{$type}-{$date}-{$randomCode}-{$sequentialNumber}";
     }
 }

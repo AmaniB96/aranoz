@@ -4,6 +4,7 @@ import Nav from '../nav/Nav';
 
 export default function Carousel({ products = [] }) {
     const [currentSlide, setCurrentSlide] = useState(0);
+    const [isTransitioning, setIsTransitioning] = useState(false);
 
     // Default slides if no products provided
     const defaultSlides = [
@@ -50,11 +51,25 @@ export default function Carousel({ products = [] }) {
     const slides = [...defaultSlides, ...pinnedSlides];
 
     const nextSlide = () => {
+        if (isTransitioning) return;
+        
+        setIsTransitioning(true);
         setCurrentSlide((prev) => (prev + 1) % slides.length);
+        
+        setTimeout(() => {
+            setIsTransitioning(false);
+        }, 600);
     };
 
     const prevSlide = () => {
+        if (isTransitioning) return;
+        
+        setIsTransitioning(true);
         setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+        
+        setTimeout(() => {
+            setIsTransitioning(false);
+        }, 600);
     };
 
     return (
@@ -62,7 +77,7 @@ export default function Carousel({ products = [] }) {
             <Nav/>
 
             <div className="carousel-content">
-                <div className="slide-content">
+                <div className="slide-content" key={currentSlide}>
                     <div className="slide-text">
                         <h1>{slides[currentSlide].title}</h1>
                         <p>{slides[currentSlide].description}</p>
@@ -74,11 +89,21 @@ export default function Carousel({ products = [] }) {
                 </div>
 
                 <div className="carousel-controls">
-                    <button className="carousel-btn prev" onClick={prevSlide}>
+                    <button 
+                        className="carousel-btn prev" 
+                        onClick={prevSlide}
+                        disabled={isTransitioning}
+                        style={{ opacity: isTransitioning ? 0.5 : 1 }}
+                    >
                         Previous
                     </button>
                     <span className="separator">|</span>
-                    <button className="carousel-btn next" onClick={nextSlide}>
+                    <button 
+                        className="carousel-btn next" 
+                        onClick={nextSlide}
+                        disabled={isTransitioning}
+                        style={{ opacity: isTransitioning ? 0.5 : 1 }}
+                    >
                         Next
                     </button>
                 </div>
