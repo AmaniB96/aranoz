@@ -39,17 +39,17 @@ export default function Success() {
                             </div>
                             <div className="info-item">
                                 <span className="label">Subtotal:</span>
-                                <span className="value">${subtotal}</span>
+                                <span className="value">${Number(subtotal).toFixed(2)}</span>
                             </div>
                             {discount > 0 && (
                                 <div className="info-item">
                                     <span className="label">Discount ({couponCode}):</span>
-                                    <span className="value discount">-${discount}</span>
+                                    <span className="value discount">-${Number(discount).toFixed(2)}</span>
                                 </div>
                             )}
                             <div className="info-item">
                                 <span className="label">Total Amount:</span>
-                                <span className="value total">${total}</span>
+                                <span className="value total">${Number(total).toFixed(2)}</span>
                             </div>
                         </div>
                     </div>
@@ -57,27 +57,34 @@ export default function Success() {
                     <div className="order-items">
                         <h2>Order Items</h2>
                         <div className="items-list">
-                            {order.items?.map((item) => (
-                                <div key={item.id} className="item-card">
-                                    <div className="item-image">
-                                        <img 
-                                            src={item.image} 
-                                            alt={item.name} 
-                                            onError={e => e.target.src = 'public/images/placeholder.png'}
-                                        />
-                                    </div>
-                                    <div className="item-details">
-                                        <h3>{item.name}</h3>
-                                        <div className="item-meta">
-                                            <span className="quantity">Qty: {item.quantity}</span>
-                                            <span className="price">${item.unit_price}</span>
+                            {order.items?.map((item) => {
+                                // CORRECTION : Construire le bon chemin d'image
+                                const imageUrl = item.image 
+                                    ? `/storage/products/panier/${item.image}`
+                                    : '/public/images/placeholder.png';
+                                
+                                return (
+                                    <div key={item.id} className="item-card">
+                                        <div className="item-image">
+                                            <img 
+                                                src={cartProduct.product?.image_front ? `/storage/products/card/${cartProduct.product.image_front}` : 'public/images/placeholder.png'}
+                                                alt={cartProduct.product?.name}
+                                                onError={e => e.target.src = 'public/images/placeholder.png'}
+                                            />
                                         </div>
-                                        <div className="item-total">
-                                            Total: ${item.total.toFixed(2)}
+                                        <div className="item-details">
+                                            <h3>{item.name}</h3>
+                                            <div className="item-meta">
+                                                <span className="quantity">Qty: {item.quantity}</span>
+                                                <span className="price">${Number(item.unit_price).toFixed(2)}</span>
+                                            </div>
+                                            <div className="item-total">
+                                                Total: ${Number(item.total).toFixed(2)}
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
                 </div>

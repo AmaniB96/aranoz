@@ -77,6 +77,7 @@ function NavAdmin() {
                                 <Link href="/admin/products" className="dropdown-item">All Products</Link>
                                 <Link href="/admin/products/create" className="dropdown-item">Add Product</Link>
                                 <Link href="/admin/promos" className="dropdown-item">Promotions</Link>
+                                <Link href="/admin/coupons" className="dropdown-item">Coupons</Link>
                             </div>
                         )}
                     </div>

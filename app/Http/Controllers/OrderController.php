@@ -70,8 +70,7 @@ class OrderController extends controller
         $user = auth()->user();
         
         if (!$user) {
-            Log::error('User not authenticated');
-            return back()->with('error', 'Please login to checkout');
+            return redirect()->route('login')->with('error', 'Please login to checkout');
         }
         
         Log::info('User authenticated: ' . $user->id);
@@ -85,146 +84,104 @@ class OrderController extends controller
         Log::info('Cart found: ' . ($cart ? 'YES (ID: ' . $cart->id . ')' : 'NO'));
         
         if (!$cart || $cart->cartProducts->isEmpty()) {
-            Log::error('Cart is empty or not found');
-            return back()->with('error', 'Your cart is empty.');
+            return redirect()->route('cart.index')->with('error', 'Your cart is empty');
         }
+        
+        // Validate request data
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'phone' => 'required|string|max:20',
+            'address' => 'required|string|max:500',
+            'city' => 'required|string|max:100',
+            'zip_code' => 'required|string|max:10',
+            'country' => 'required|string|max:100',
+        ]);
         
         DB::beginTransaction();
         
         try {
-            // Calculate subtotal (before any discounts)
-            $subtotal = 0;
-            $items = []; // Préparer les items pour l'email
-            
-            foreach ($cart->cartProducts as $cartProduct) {
+            // Calculate subtotal
+            $subtotal = $cart->cartProducts->sum(function ($cartProduct) {
                 $product = $cartProduct->product;
-                $unitPrice = $product->price;
+                $price = $product->price;
                 
-                // Apply promo if available
-                if ($product->promo && $product->promo->active && isset($product->promo->discount)) {
-                    $unitPrice = round($unitPrice - ($unitPrice * $product->promo->discount / 100), 2);
+                // Apply promo if exists and active
+                if ($product->promo && $product->promo->active) {
+                    $price = $price * (1 - $product->promo->discount / 100);
                 }
                 
-                $itemTotal = $unitPrice * $cartProduct->quantity;
-                $subtotal += $itemTotal;
-                
-                // Préparer les données pour l'email
-                $items[] = [
-                    'name' => $product->name,
-                    'quantity' => $cartProduct->quantity,
-                    'unit_price' => $unitPrice,
-                    'total' => $itemTotal,
-                ];
-            }
+                return $price * $cartProduct->quantity;
+            });
             
-            Log::info('Subtotal calculated: ' . $subtotal);
-            
-            // Check for applied coupon from session
+            // Get applied coupon from session
             $appliedCoupon = session('applied_coupon');
-            $coupon = null;
-            $discountAmount = 0;
-            $finalTotal = $subtotal;
+            $discount = 0;
+            $couponCode = null;
+            $couponId = null;
             
             if ($appliedCoupon) {
                 $coupon = Coupon::find($appliedCoupon['id']);
-                if ($coupon && $coupon->isValid($subtotal)) {
-                    // Calculate discount
-                    if ($appliedCoupon['type'] === 'percentage') {
-                        $discountAmount = round($subtotal * ($appliedCoupon['value'] / 100), 2);
-                    } elseif ($appliedCoupon['type'] === 'fixed') {
-                        $discountAmount = min($appliedCoupon['value'], $subtotal);
+                
+                if ($coupon && $coupon->is_active && $coupon->isValid()) {
+                    $couponId = $coupon->id;
+                    $couponCode = $coupon->code;
+                    
+                    if ($coupon->type === 'percentage') {
+                        $discount = ($subtotal * $coupon->value) / 100;
+                    } else {
+                        $discount = min($coupon->value, $subtotal);
                     }
-                    
-                    $finalTotal = max(0, $subtotal - $discountAmount);
-                    
-                    Log::info('Coupon applied: ' . $appliedCoupon['code'] . ' - Discount: $' . $discountAmount . ' - Final total: $' . $finalTotal);
                     
                     // Increment coupon usage
                     $coupon->increment('usage_count');
-                } else {
-                    Log::warning('Applied coupon is no longer valid: ' . ($appliedCoupon['code'] ?? 'unknown'));
-                    $appliedCoupon = null;
                 }
             }
             
-            $total = $finalTotal; // Pour compatibilité avec le code existant
-            Log::info('Final total calculated: ' . $total);
+            $total = max($subtotal - $discount, 0);
             
-            // Generate unique order number
-            $orderNumber = 'ORD-' . strtoupper(uniqid());
-            
-            Log::info('Order number generated: ' . $orderNumber);
-            
-            // Create order with all required fields
-            $orderData = [
+            // Create order
+            $order = Order::create([
                 'user_id' => $user->id,
                 'cart_id' => $cart->id,
-                'order_number' => $orderNumber,
+                'order_number' => 'ORD-' . strtoupper(uniqid()),
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'phone' => $validated['phone'],
+                'address' => $validated['address'],
+                'city' => $validated['city'],
+                'zip_code' => $validated['zip_code'],
+                'country' => $validated['country'],
                 'status' => 'pending',
                 'date' => now(),
-                'coupon_id' => $coupon ? $coupon->id : null,
                 'subtotal' => $subtotal,
-                'discount_amount' => $discountAmount,
-                'total' => $finalTotal,
-                'coupon_code' => $appliedCoupon ? $appliedCoupon['code'] : null,
-            ];
-            
-            Log::info('Creating order with data: ' . json_encode($orderData));
-            
-            $order = Order::create($orderData);
-            
-            Log::info('Order created successfully with ID: ' . $order->id);
+                'discount_amount' => $discount,
+                'total' => $total,
+                'coupon_id' => $couponId,
+                'coupon_code' => $couponCode,
+            ]);
             
             // Mark cart as ordered
             $cart->update(['ordered_at' => now()]);
             
-            Log::info('Cart marked as ordered - products kept for history');
-            
-            // CRÉER UN NOUVEAU PANIER VIDE pour les futurs achats
-            Cart::create([
-                'user_id' => $user->id,
-                'ordered_at' => null,
-                'created_at' => now(),
-                'updated_at' => now()
-            ]);
-            
-            Log::info('New empty cart created for future purchases');
-            
-            // ENVOYER L'EMAIL DE CONFIRMATION
-            try {
-                Mail::to($user->email)->send(new OrderConfirmation(
-                    $order, 
-                    $items, 
-                    number_format((float) $finalTotal, 2),
-                    number_format((float) $subtotal, 2),
-                    number_format((float) $discountAmount, 2),
-                    $appliedCoupon ? $appliedCoupon['code'] : null
-                ));
-                Log::info('Order confirmation email sent to: ' . $user->email);
-            } catch (\Exception $emailException) {
-                Log::error('Failed to send order confirmation email: ' . $emailException->getMessage());
-                // Ne pas échouer la commande si l'email échoue
-            }
+            // Clear applied coupon from session
+            session()->forget('applied_coupon');
             
             DB::commit();
             
-            Log::info('Transaction committed successfully');
+            // Send confirmation email
+            try {
+                Mail::to($order->email)->send(new OrderConfirmation($order));
+            } catch (\Exception $e) {
+                Log::error('Failed to send order confirmation email: ' . $e->getMessage());
+            }
             
-            // Force redirect to success page
-            $successUrl = route('orders.success', $order->id);
-            Log::info('Redirecting to: ' . $successUrl);
+            return redirect()->route('orders.success', $order->id);
             
-            return redirect($successUrl)->with('success', 'Order placed successfully!');
-                
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('=== CHECKOUT FAILED ===');
-            Log::error('Error message: ' . $e->getMessage());
-            Log::error('Error file: ' . $e->getFile() . ':' . $e->getLine());
-            Log::error('Stack trace: ' . $e->getTraceAsString());
-            
-            // Return to cart with error
-            return back()->with('error', 'Failed to create order: ' . $e->getMessage());
+            Log::error('Order creation failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to create order. Please try again.');
         }
     }
 
@@ -234,38 +191,15 @@ class OrderController extends controller
         $user = Auth::user();
         $order = Order::where('id', $id)
             ->where('user_id', $user->id)
-            ->with(['cart.cartProducts.product'])
+            ->with(['cart.cartProducts.product.promo']) // AJOUTER .promo
             ->firstOrFail();
 
-        // Récupérer les vrais montants depuis la base
-        $subtotal = $order->subtotal;
-        $discount = $order->discount_amount;
-        $total = $order->total;
-        $couponCode = $order->coupon_code;
-
-        // Formater les items pour l'affichage
-        $items = $order->cart->cartProducts->map(function ($cp) {
-            return [
-                'id' => $cp->id,
-                'name' => $cp->product->name,
-                'unit_price' => $cp->product->price,
-                'quantity' => $cp->quantity,
-                'total' => $cp->product->price * $cp->quantity,
-            ];
-        });
-
         return Inertia::render('Orders/Success', [
-            'order' => [
-                'id' => $order->id,
-                'order_number' => $order->order_number,
-                'date' => $order->created_at->toISOString(),
-                'status' => $order->status,
-                'items' => $items,
-            ],
-            'total' => number_format($total, 2), // MONTANT FINAL PAYÉ
-            'subtotal' => number_format($subtotal, 2), // MONTANT AVANT RÉDUCTION
-            'discount' => number_format($discount, 2), // MONTANT DE LA RÉDUCTION
-            'couponCode' => $couponCode, // CODE DU COUPON UTILISÉ
+            'order' => $order,
+            'total' => number_format($order->total, 2),
+            'subtotal' => number_format($order->subtotal, 2),
+            'discount' => number_format($order->discount_amount, 2),
+            'couponCode' => $order->coupon_code,
         ]);
     }
 
@@ -275,7 +209,7 @@ class OrderController extends controller
         
         $orders = Order::where('user_id', $user->id)
             ->where('status', 'pending')
-            ->with(['cart.cartProducts.product'])
+            ->with(['cart.cartProducts.product.promo'])
             ->orderBy('created_at', 'desc')
             ->get()
             ->map(function ($order) {
@@ -284,10 +218,10 @@ class OrderController extends controller
                     'order_number' => $order->order_number,
                     'created_at' => $order->created_at,
                     'status' => $order->status,
-                    'total' => number_format($order->total, 2), // MONTANT FINAL PAYÉ
-                    'subtotal' => number_format($order->subtotal, 2), // MONTANT AVANT RÉDUCTION
-                    'discount' => number_format($order->discount_amount, 2), // MONTANT DE LA RÉDUCTION
-                    'coupon_code' => $order->coupon_code, // CODE DU COUPON UTILISÉ
+                    'total' => number_format($order->total, 2), // FORMATÉ
+                    'subtotal' => number_format($order->subtotal, 2), // FORMATÉ
+                    'discount_amount' => number_format($order->discount_amount, 2), // FORMATÉ
+                    'coupon_code' => $order->coupon_code,
                     'cart' => $order->cart,
                 ];
             });
@@ -303,7 +237,7 @@ class OrderController extends controller
         
         $orders = Order::where('user_id', $user->id)
             ->where('status', 'confirmed')
-            ->with(['cart.cartProducts.product'])
+            ->with(['cart.cartProducts.product.promo'])
             ->orderBy('created_at', 'desc')
             ->get()
             ->map(function ($order) {
@@ -312,14 +246,14 @@ class OrderController extends controller
                     'order_number' => $order->order_number,
                     'created_at' => $order->created_at,
                     'status' => $order->status,
-                    'total' => number_format($order->total, 2), // MONTANT FINAL PAYÉ
-                    'subtotal' => number_format($order->subtotal, 2), // MONTANT AVANT RÉDUCTION
-                    'discount' => number_format($order->discount_amount, 2), // MONTANT DE LA RÉDUCTION
-                    'coupon_code' => $order->coupon_code, // CODE DU COUPON UTILISÉ
+                    'total' => number_format($order->total, 2), // FORMATÉ
+                    'subtotal' => number_format($order->subtotal, 2), // FORMATÉ
+                    'discount_amount' => number_format($order->discount_amount, 2), // FORMATÉ
+                    'coupon_code' => $order->coupon_code,
                     'cart' => $order->cart,
                 ];
             });
-        
+    
         return Inertia::render('Orders/History', [
             'orders' => $orders
         ]);
@@ -330,21 +264,15 @@ class OrderController extends controller
         $user = Auth::user();
         $order = Order::where('id', $id)
             ->where('user_id', $user->id)
-            ->with(['cart.cartProducts.product'])
+            ->with(['cart.cartProducts.product.promo']) // AJOUTER .promo
             ->firstOrFail();
-
-        // Récupérer les vrais montants depuis la base
-        $subtotal = $order->subtotal;
-        $discount = $order->discount_amount;
-        $total = $order->total;
-        $couponCode = $order->coupon_code;
 
         return Inertia::render('Orders/Show', [
             'order' => $order,
-            'total' => number_format($total, 2), // MONTANT FINAL PAYÉ
-            'subtotal' => number_format($subtotal, 2), // MONTANT AVANT RÉDUCTION
-            'discount' => number_format($discount, 2), // MONTANT DE LA RÉDUCTION
-            'couponCode' => $couponCode, // CODE DU COUPON UTILISÉ
+            'total' => number_format($order->total, 2),
+            'subtotal' => number_format($order->subtotal, 2),
+            'discount' => number_format($order->discount_amount, 2),
+            'couponCode' => $order->coupon_code,
         ]);
     }
 

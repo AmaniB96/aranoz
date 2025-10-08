@@ -65,27 +65,42 @@ export default function Show() {
                     <div className="order-items">
                         <h2>Order Items</h2>
                         <div className="items-list">
-                            {order.cart?.cart_products?.map((cartProduct) => (
-                                <div key={cartProduct.id} className="item-card">
-                                    <div className="item-image">
-                                        <img
-                                            src={cartProduct.product?.image_front ? `/storage/products/card/${cartProduct.product.image_front}` : 'public/images/placeholder.png'}
-                                            alt={cartProduct.product?.name}
-                                            onError={e => e.target.src = 'public/images/placeholder.png'}
-                                        />
-                                    </div>
-                                    <div className="item-details">
-                                        <h3>{cartProduct.product?.name}</h3>
-                                        <div className="item-meta">
-                                            <span className="quantity">Qty: {cartProduct.quantity}</span>
-                                            <span className="price">${cartProduct.product?.price}</span>
+                            {order.cart?.cart_products?.map((cartProduct) => {
+                                const product = cartProduct.product;
+                                const imageUrl = product?.image_front 
+                                    ? `/storage/products/card/${product.image_front}`
+                                    : '/public/images/placeholder.png';
+                                
+                                // Calculer le prix avec promo
+                                let unitPrice = parseFloat(product?.price || 0);
+                                if (product?.promo && product.promo.active) {
+                                    unitPrice = unitPrice * (1 - product.promo.discount / 100);
+                                }
+                                
+                                const itemTotal = unitPrice * cartProduct.quantity;
+                                
+                                return (
+                                    <div key={cartProduct.id} className="item-card">
+                                        <div className="item-image">
+                                            <img 
+                                                src={imageUrl}
+                                                alt={product?.name}
+                                                onError={e => e.target.src = '/public/images/placeholder.png'}
+                                            />
                                         </div>
-                                        <div className="item-total">
-                                            Total: ${(cartProduct.quantity * (cartProduct.product?.price || 0)).toFixed(2)}
+                                        <div className="item-details">
+                                            <h3>{product?.name}</h3>
+                                            <div className="item-meta">
+                                                <span className="quantity">Qty: {cartProduct.quantity}</span>
+                                                <span className="price">${unitPrice.toFixed(2)}</span>
+                                            </div>
+                                            <div className="item-total">
+                                                Total: ${itemTotal.toFixed(2)}
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
                 </div>
