@@ -5,12 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nouveau message de contact</title>
     <link rel="stylesheet" href="contact-message.css">
-    <style>
-
-    </style>
 </head>
 <body>
     <div class="container">
+        <!-- LOGO HEADER -->
+        <div class="email-header">
+            <div class="logo">
+                <a href="{{ url('/') }}">Aranoz.</a>
+            </div>
+        </div>
+
         <div class="header">
             <h1>📬 Nouveau message de contact</h1>
             <p>Vous avez reçu un nouveau message depuis votre site web</p>

@@ -8,6 +8,13 @@
 </head>
 <body>
     <div class="container">
+        <!-- LOGO HEADER -->
+        <div class="email-header">
+            <div class="logo">
+                <a href="{{ url('/') }}">Aranoz.</a>
+            </div>
+        </div>
+
         <div class="header">
             <h1>🎉 Merci pour votre commande !</h1>
             <p>Votre commande a été confirmée avec succès</p>

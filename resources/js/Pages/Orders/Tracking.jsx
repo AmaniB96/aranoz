@@ -1,12 +1,24 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { usePage, Link } from '@inertiajs/react';
 import Nav from '@/Components/nav/Nav';
 import './orders.css';
 
 export default function Tracking() {
     const { orders } = usePage().props;
+    const [searchTerm, setSearchTerm] = useState('');
 
     console.log('Tracking orders:', orders);
+
+    // FILTRER LES COMMANDES PAR NUMÉRO DE COMMANDE
+    const filteredOrders = useMemo(() => {
+        if (!searchTerm.trim()) {
+            return orders;
+        }
+        
+        return orders.filter(order => 
+            order.order_number.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }, [orders, searchTerm]);
 
     return (
         <>
@@ -18,22 +30,66 @@ export default function Tracking() {
                     </div>
                     <h1>Track Your Orders</h1>
                     <p>Monitor the status of your pending orders</p>
+                    
+                    {/* CHAMP DE RECHERCHE */}
+                    <div className="search-container">
+                        <div className="search-input-wrapper">
+                            <input
+                                type="text"
+                                placeholder="Search by order number..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="search-input"
+                            />
+                            <i className="fas fa-search search-icon"></i>
+                        </div>
+                        {searchTerm && (
+                            <button 
+                                onClick={() => setSearchTerm('')}
+                                className="clear-search"
+                                title="Clear search"
+                            >
+                                <i className="fas fa-times"></i>
+                            </button>
+                        )}
+                    </div>
                 </div>
 
-                {orders.length === 0 ? (
+                {filteredOrders.length === 0 ? (
                     <div className="empty-state">
                         <div className="empty-icon">
                             <i className="fas fa-inbox"></i>
                         </div>
-                        <h2>No Pending Orders</h2>
-                        <p>You don't have any orders in progress</p>
+                        <h2>
+                            {searchTerm ? 'No Orders Found' : 'No Pending Orders'}
+                        </h2>
+                        <p>
+                            {searchTerm 
+                                ? `No orders match "${searchTerm}"` 
+                                : "You don't have any orders in progress"
+                            }
+                        </p>
+                        {searchTerm && (
+                            <button 
+                                onClick={() => setSearchTerm('')}
+                                className="btn-secondary"
+                            >
+                                Clear Search
+                            </button>
+                        )}
                         <Link href="/shop" className="btn-primary">
                             Start Shopping
                         </Link>
                     </div>
                 ) : (
                     <div className="orders-list">
-                        {orders.map((order) => (
+                        {searchTerm && (
+                            <div className="search-results">
+                                <p>Found {filteredOrders.length} order(s) matching "{searchTerm}"</p>
+                            </div>
+                        )}
+                        
+                        {filteredOrders.map((order) => (
                             <div key={order.id} className="order-card">
                                 <div className="order-header">
                                     <div>

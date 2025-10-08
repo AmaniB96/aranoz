@@ -202,29 +202,11 @@ export default function Index() {
             return;
         }
 
-        console.log('Attempting checkout...');
+        console.log('Redirecting to checkout...');
         
-        router.post('/checkout', {
-            coupon_code: appliedCoupon?.code
-        }, {
-            onStart: () => {
-                console.log('Checkout request started');
-            },
-            onSuccess: (page) => {
-                console.log('Checkout successful:', page);
-                // Émettre un événement pour vider le panier dans la navigation
-                window.dispatchEvent(new CustomEvent('cart:cleared', { 
-                    detail: { cartCount: 0 } 
-                }));
-            },
-            onError: (errors) => {
-                console.error('Checkout errors:', errors);
-                alert('Failed to process checkout: ' + JSON.stringify(errors));
-            },
-            onFinish: () => {
-                console.log('Checkout request finished');
-            }
-        });
+        // SIMPLIFIER - Juste rediriger vers la page checkout
+        // Les données seront récupérées côté serveur
+        router.get('/checkout');
     };
 
     return (

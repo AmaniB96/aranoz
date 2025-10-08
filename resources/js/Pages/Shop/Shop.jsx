@@ -13,6 +13,11 @@ export default function Shop() {
     const [search, setSearch] = useState(filters.search || '');
     const [localProducts, setLocalProducts] = useState(products.data);
 
+    // SYNCHRONISER localProducts AVEC LES DONNÉES DU SERVEUR LORS DES CHANGEMENTS DE PAGE
+    useEffect(() => {
+        setLocalProducts(products.data);
+    }, [products.data]);
+
     // ÉCOUTER LES CHANGEMENTS DE LIKES
     useEffect(() => {
         const handleLikeChanged = (event) => {
