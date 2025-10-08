@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, usePage, router } from '@inertiajs/react';
 import ShopHeader from '@/Components/Shop/ShopHeader';
 import SidebarFilters from '@/Components/Shop/SidebarFilters';
@@ -11,6 +11,35 @@ import BestSellers from '@/Components/BestSellers/BestSellers';
 export default function Shop() {
     const { products, categories, colors, filters, bestSellers = [] } = usePage().props;
     const [search, setSearch] = useState(filters.search || '');
+    const [localProducts, setLocalProducts] = useState(products.data);
+
+    // ÉCOUTER LES CHANGEMENTS DE LIKES
+    useEffect(() => {
+        const handleLikeChanged = (event) => {
+            const { productId, liked } = event.detail;
+            console.log('Like changed:', productId, liked); // DEBUG
+            
+            // Mettre à jour l'état local des produits
+            setLocalProducts(prevProducts => 
+                prevProducts.map(p => {
+                    if (p.id === productId) {
+                        console.log('Updating product:', p.id, 'liked:', liked); // DEBUG
+                        return {
+                            ...p, 
+                            is_liked_by_user: liked,
+                            liked_by_users_count: liked 
+                                ? p.liked_by_users_count + 1 
+                                : p.liked_by_users_count - 1
+                        };
+                    }
+                    return p;
+                })
+            );
+        };
+
+        window.addEventListener('product:like-changed', handleLikeChanged);
+        return () => window.removeEventListener('product:like-changed', handleLikeChanged);
+    }, []);
 
     const handleFilter = (query) => {
         router.get('/shop', query, { preserveState: true, replace: true });
@@ -56,12 +85,12 @@ export default function Shop() {
 
                     <section className="shop-content">
                         <div className="products-grid">
-                            {products.data.map((p) => (
-                                <ProductCard key={p.id} product={p} />
+                            {localProducts.map((product) => (
+                                <ProductCard key={product.id} product={product} />
                             ))}
                         </div>
 
-                        <Pagination meta={products.meta} links={products.links} />
+                        <Pagination products={products} />
                     </section>
                 </div>
                 <BestSellers products={bestSellers} />

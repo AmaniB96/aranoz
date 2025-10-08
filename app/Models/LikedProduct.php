@@ -20,16 +20,6 @@ class LikedProduct extends Model
     public $incrementing = false;
     protected $keyType = 'array';
 
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
-
-    public function product()
-    {
-        return $this->belongsTo(Product::class);
-    }
-
     protected function setKeysForSaveQuery($query)
     {
         $query->where('user_id', $this->user_id)

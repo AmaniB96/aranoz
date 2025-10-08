@@ -18,6 +18,13 @@ class ShopController extends Controller
         // Récupérer les produits disponibles
         $query = Product::query()->with('promo')->where('available', true);
 
+        // AJOUTER LES RELATIONS DE LIKES
+        $query->with(['likedByUsers' => function($q) use ($user) {
+            if ($user) {
+                $q->where('user_id', $user->id);
+            }
+        }])->withCount('likedByUsers');
+
         // Filtrer par catégorie
         if ($request->category) {
             $query->where('product_category_id', $request->category);
@@ -50,7 +57,7 @@ class ShopController extends Controller
         $query->orderBy($sortBy, $sortOrder);
 
         // Paginer
-        $products = $query->paginate(12);
+        $products = $query->paginate(9);
 
         // Transformer pour ajouter les URLs d'images
         $products->getCollection()->transform(function ($product) use ($user) {
@@ -82,6 +89,10 @@ class ShopController extends Controller
             if ($user && method_exists($user, 'favorites')) {
                 $data['isFavorited'] = $user->favorites()->where('product_id', $product->id)->exists();
             }
+
+            // AJOUTER LES DONNÉES DE LIKES AU TABLEAU RETOURNÉ
+            $data['is_liked_by_user'] = $user ? $product->likedByUsers->isNotEmpty() : false;
+            $data['liked_by_users_count'] = $product->liked_by_users_count;
 
             return $data;
         });

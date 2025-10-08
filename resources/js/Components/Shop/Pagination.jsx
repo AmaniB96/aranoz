@@ -1,17 +1,51 @@
 import React from 'react';
 import { router } from '@inertiajs/react';
 
-export default function Pagination({ meta = {}, links = [] }) {
+export default function Pagination({ products }) {
+    // Debug: vérifier la structure des données
+    console.log('Pagination products:', products);
+
+    if (!products || products.last_page <= 1) {
+        return null;
+    }
+
     const changePage = (url) => {
         if (!url) return;
-        router.get(url, {}, { preserveState: true });
+        router.get(url, {}, { preserveState: true, preserveScroll: true });
     };
+
+    // Trouver les liens Previous et Next dans le tableau links
+    const prevLink = products.links?.find(link => 
+        link.label === '&laquo; Previous' || 
+        link.label === 'Previous'
+    );
+    const nextLink = products.links?.find(link => 
+        link.label === 'Next &raquo;' || 
+        link.label === 'Next'
+    );
 
     return (
         <nav className="pagination">
-            <button onClick={() => changePage(meta.links && meta.links.prev)} disabled={!meta.links || !meta.links.prev}>Prev</button>
-            <span className="page-info">Page {meta.current_page} / {meta.last_page}</span>
-            <button onClick={() => changePage(meta.links && meta.links.next)} disabled={!meta.links || !meta.links.next}>Next</button>
+            <button 
+                onClick={() => changePage(prevLink?.url)} 
+                disabled={!prevLink?.url}
+                className="pagination-btn prev"
+            >
+                Previous
+            </button>
+            
+            <span className="page-info">
+                Page {products.current_page} of {products.last_page} 
+                ({products.total} products)
+            </span>
+            
+            <button 
+                onClick={() => changePage(nextLink?.url)} 
+                disabled={!nextLink?.url}
+                className="pagination-btn next"
+            >
+                Next
+            </button>
         </nav>
     );
 }

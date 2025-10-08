@@ -15,29 +15,42 @@ class LikedProductController extends Controller
     {
         $user = Auth::user();
         if (!$user) {
+            if ($request->wantsJson()) {
+                return response()->json(['error' => 'You must be logged in to like products'], 401);
+            }
             return redirect()->back()->with('error', 'You must be logged in to like products');
         }
 
         $product = Product::findOrFail($productId);
         
-        // Utiliser la clé primaire composite pour trouver le like
         $existingLike = LikedProduct::where('user_id', $user->id)
                                    ->where('product_id', $productId)
                                    ->first();
 
         if ($existingLike) {
-            // Unlike - utiliser delete() directement sur la requête
+            // UTILISER UNE REQUÊTE DELETE DIRECTE AU LIEU DE $existingLike->delete()
             LikedProduct::where('user_id', $user->id)
                        ->where('product_id', $productId)
                        ->delete();
+            $liked = false;
             $message = 'Product unliked successfully!';
         } else {
-            // Like
             LikedProduct::create([
                 'user_id' => $user->id,
                 'product_id' => $productId
             ]);
+            $liked = true;
             $message = 'Product liked successfully!';
+        }
+
+        // RETOURNER DU JSON POUR AJAX
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'liked' => $liked,
+                'likesCount' => $product->fresh()->liked_by_users_count
+            ]);
         }
 
         return redirect()->back()->with('success', $message);

@@ -9,6 +9,7 @@ export default function ProductCard({ product, onUnliked }) {
     const [likesCount, setLikesCount] = useState(product.liked_by_users_count || 0);
     const [isLiking, setIsLiking] = useState(false);
 
+    // SYNCHRONISER L'ÉTAT LOCAL AVEC LES PROPS
     useEffect(() => {
         setIsLiked(product.is_liked_by_user || false);
         setLikesCount(product.liked_by_users_count || 0);
@@ -83,13 +84,15 @@ export default function ProductCard({ product, onUnliked }) {
             preserveState: true,
             preserveScroll: true,
             onSuccess: (page) => {
+                // TOGGLE L'ÉTAT LOCAL
                 const newLikedState = !isLiked;
                 setIsLiked(newLikedState);
                 setLikesCount(newLikedState ? likesCount + 1 : likesCount - 1);
                 
-                if (!newLikedState && onUnliked) {
-                    onUnliked(product.id);
-                }
+                // ÉMETTRE L'ÉVÉNEMENT POUR SYNCHRONISER AVEC SHOP
+                window.dispatchEvent(new CustomEvent('product:like-changed', {
+                    detail: { productId: product.id, liked: newLikedState }
+                }));
                 
                 const flashSuccess = page.props.flash?.success;
                 if (flashSuccess) {
@@ -158,7 +161,7 @@ export default function ProductCard({ product, onUnliked }) {
                         />
                         
                         {hasPromo && (
-                            <div className="badge-promo">
+                            <div className="promo-badge">
                                 -{product.promo.discount}%
                             </div>
                         )}
@@ -188,7 +191,7 @@ export default function ProductCard({ product, onUnliked }) {
                         <button onClick={addToCart} className="btn-add">+ Add to cart</button>
                         <button 
                             onClick={handleLike}
-                            className={`btn-like ${isLiked ? 'liked' : ''} ${isLiking ? 'loading' : ''}`}
+                            className={` ${isLiked ? 'liked' : ''} ${isLiking ? 'loading' : ''}`}
                             disabled={isLiking}
                             title={isLiked ? 'Unlike this product' : 'Like this product'}
                         >

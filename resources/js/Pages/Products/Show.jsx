@@ -87,6 +87,10 @@ export default function Show() {
                 setIsLiked(newLikedState);
                 setLikesCount(newLikedState ? likesCount + 1 : likesCount - 1);
                 
+                window.dispatchEvent(new CustomEvent('product:like-changed', {
+                    detail: { productId: product.id, liked: newLikedState }
+                }));
+                
                 const flashSuccess = page.props.flash?.success;
                 if (flashSuccess) {
                     toast.success(flashSuccess, {
