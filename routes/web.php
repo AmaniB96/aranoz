@@ -4,6 +4,7 @@ use App\Http\Controllers\BlogCommentController;
 use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\CouponController;
+use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ShopController;
@@ -202,6 +203,9 @@ Route::post('/contact/send-message', [ContactController::class, 'sendMessage'])-
 
 // API route for coupon validation
 Route::post('/api/coupons/validate', [CouponController::class, 'validateCoupon'])->name('api.coupons.validate');
+
+// Route pour la newsletter
+Route::post('/api/newsletter-signup', [NewsletterController::class, 'signup']);
 
 // Ajouter après les routes storage
 

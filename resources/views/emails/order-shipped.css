@@ -12,3 +12,9 @@
         .total-breakdown { text-align: right; }
         .total-breakdown p { margin: 5px 0; font-size: 16px; }
         .total-breakdown .final-total { font-size: 18px; color: #059669; border-top: 2px solid #eee; padding-top: 10px; margin-top: 10px; }
+
+        .logo {
+    font-size: 24px;
+    font-weight: bold;
+    color: #ffffff;
+}

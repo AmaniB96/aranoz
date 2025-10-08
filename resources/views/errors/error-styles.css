@@ -1,0 +1,169 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0 !important;
+    padding: 0 !important;
+    font-family: 'Figtree', sans-serif;
+    overflow-x: hidden;
+}
+
+html {
+    height: 100%;
+}
+
+
+.error-logo {
+    margin-bottom: 30px;
+}
+
+.error-logo a {
+    font-size: 48px;
+    font-weight: 700;
+    color: #ff6b35;
+    text-decoration: none;
+    font-family: 'Figtree', sans-serif;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.error-logo a:hover {
+    color: #e55a2b;
+    transform: scale(1.05);
+    text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.15);
+}
+
+
+@media (max-width: 768px) {
+    /* ... autres styles mobiles ... */
+    
+    .error-logo a {
+        font-size: 36px;
+    }
+}
+
+.error-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #ff6b8a 0%, #ff3b6b 100%);
+    font-family: 'Figtree', sans-serif;
+}
+
+.error-container {
+    text-align: center;
+    max-width: 600px;
+    padding: 40px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    backdrop-filter: blur(10px);
+}
+
+.error-code {
+    /* GARDER la couleur orange Aranoz */
+    font-size: 120px;
+    font-weight: 700;
+    color: #ff6b35;
+    margin: 0;
+    line-height: 1;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.error-title {
+    font-size: 28px;
+    color: #333;
+    margin: 20px 0;
+    font-weight: 600;
+}
+
+.error-message {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 30px;
+    line-height: 1.6;
+}
+
+.error-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn-primary, .btn-secondary {
+    padding: 12px 24px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.btn-primary {
+    /* UTILISER le dégradé rose-rouge pour cohérence */
+    background: linear-gradient(90deg, #ff6b8a, #ff3b6b);
+    color: white;
+    border: 2px solid #ff3b6b;
+    box-shadow: 0 4px 15px rgba(255, 59, 107, 0.2);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(90deg, #ff3b6b, #ff6b8a);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 59, 107, 0.3);
+}
+
+.btn-secondary {
+    background: transparent;
+    color: #666;
+    border: 2px solid #ddd;
+}
+
+.btn-secondary:hover {
+    background: #f8f9fa;
+    border-color: #ccc;
+    transform: translateY(-2px);
+}
+
+.error-illustration {
+    margin-bottom: 30px;
+}
+
+.error-illustration svg {
+    width: 200px;
+    height: 200px;
+    opacity: 0.8;
+    /* CHANGEMENT : Utiliser la couleur orange Aranoz */
+    stroke: #ff6b35;
+}
+
+@media (max-width: 768px) {
+    .error-container {
+        margin: 20px;
+        padding: 30px 20px;
+    }
+    
+    .error-code {
+        font-size: 80px;
+    }
+    
+    .error-title {
+        font-size: 24px;
+    }
+    
+    .error-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .btn-primary, .btn-secondary {
+        width: 100%;
+        max-width: 250px;
+    }
+}

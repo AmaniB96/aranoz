@@ -52,8 +52,18 @@
     transition: background 0.3s ease;
 }
 
+
 .newsletter-btn:hover {
     background: #c82333;
+}
+
+.newsletter-message {
+    margin-top: 15px;
+    padding: 12px 20px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 500;
 }
 
 .decorative-elements {
