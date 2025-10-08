@@ -4,7 +4,37 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nouveau message de contact</title>
-    <link rel="stylesheet" href="contact-message.css">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+.container { max-width: 600px; margin: 0 auto; padding: 20px; }
+
+/* STYLES POUR LE LOGO */
+.email-header {
+    text-align: center;
+    padding: 20px 0;
+    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 30px;
+}
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+    color: #ffffff;
+}
+.logo a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.header { background: linear-gradient(90deg, #667eea, #764ba2); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+.content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+.message-box { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; border-left: 4px solid #667eea; }
+.info-row { margin: 10px 0; }
+.label { font-weight: bold; color: #555; }
+.value { color: #333; }
+.message-content { background: #f8f9fa; padding: 15px; border-radius: 6px; margin-top: 15px; border-left: 3px solid #667eea; }
+.footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
+.reply-btn { display: inline-block; background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 10px 0; }
+    </style>
 </head>
 <body>
     <div class="container">
