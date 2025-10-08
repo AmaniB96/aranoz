@@ -248,7 +248,6 @@ class OrderController extends controller
             return [
                 'id' => $cp->id,
                 'name' => $cp->product->name,
-                'image' => $cp->product->image_front ? "/storage/products/card/{$cp->product->image_front}" : '/storage/products/default.png',
                 'unit_price' => $cp->product->price,
                 'quantity' => $cp->quantity,
                 'total' => $cp->product->price * $cp->quantity,

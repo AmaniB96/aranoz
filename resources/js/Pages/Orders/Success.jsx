@@ -63,7 +63,7 @@ export default function Success() {
                                         <img 
                                             src={item.image} 
                                             alt={item.name} 
-                                            onError={e => e.target.src = '/storage/products/default.png'}
+                                            onError={e => e.target.src = 'public/images/placeholder.png'}
                                         />
                                     </div>
                                     <div className="item-details">

@@ -42,7 +42,7 @@ export default function Carousel({ products = [] }) {
         id: product.id,
         title: product.name,
         description: product.description,
-        image: product.image_front ? `/storage/products/carousel/${product.image_front}` : "/storage/products/default.png",
+        image: product.image_front ? `/storage/products/carousel/${product.image_front}` : "public/images/placeholder.png",
         slideNumber: String(defaultSlides.length + index + 1).padStart(2, '0')
     }));
 

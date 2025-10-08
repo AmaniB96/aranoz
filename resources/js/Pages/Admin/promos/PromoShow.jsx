@@ -43,7 +43,7 @@ export default function PromoShow() {
                                     <div key={product.id} className="product-item">
                                         <Link href={route('products.show', product.id)}>
                                             <img
-                                                src={product.image_front ? `/storage/products/card/${product.image_front}` : '/storage/products/default.png'}
+                                                src={product.image_front ? `/storage/products/card/${product.image_front}` : 'public/images/placeholder.png'}
                                                 alt={product.name}
                                             />
                                             <h4>{product.name}</h4>

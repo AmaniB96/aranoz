@@ -7,6 +7,7 @@ use Illuminate\Support\ServiceProvider;
 use Inertia\Inertia;
 use App\Models\Cart;
 use Illuminate\Support\Facades\Auth;
+use App\Services\ImageService;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -15,7 +16,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(ImageService::class, function ($app) {
+            return new ImageService();
+        });
     }
 
     /**

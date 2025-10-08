@@ -69,9 +69,9 @@ export default function Show() {
                                 <div key={cartProduct.id} className="item-card">
                                     <div className="item-image">
                                         <img
-                                            src={cartProduct.product?.image_front ? `/storage/products/card/${cartProduct.product.image_front}` : '/storage/products/default.png'}
+                                            src={cartProduct.product?.image_front ? `/storage/products/card/${cartProduct.product.image_front}` : 'public/images/placeholder.png'}
                                             alt={cartProduct.product?.name}
-                                            onError={e => e.target.src = '/storage/products/default.png'}
+                                            onError={e => e.target.src = 'public/images/placeholder.png'}
                                         />
                                     </div>
                                     <div className="item-details">

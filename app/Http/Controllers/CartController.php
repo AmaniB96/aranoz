@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cart;
+use App\Models\CartProduct; // ADD THIS LINE
 use App\Models\Coupon;
 use App\Models\Product;
 use Illuminate\Http\Request;
@@ -42,7 +43,7 @@ class CartController extends Controller
                     'id' => $cp->id,
                     'product_id' => $product->id,
                     'name' => $product->name,
-                    'image' => $product->image_front ? "/storage/products/card/{$product->image_front}" : '/storage/products/default.png',
+                    'image' => $product->image_front ? "/storage/products/card/{$product->image_front}" : 'public/images/placeholder.png',
                     'unit_price' => $unitPrice,
                     'original_price' => $product->price,
                     'discounted_price' => $discounted,

@@ -14,72 +14,79 @@ class ShopController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        $query = Product::query()->with('promo', 'productCategory');
+        
+        // Récupérer les produits disponibles
+        $query = Product::query()->with('promo')->where('available', true);
 
-        // Filters (server-side)
-        if ($request->filled('category')) {
+        // Filtrer par catégorie
+        if ($request->category) {
             $query->where('product_category_id', $request->category);
         }
 
-        if ($request->filled('color')) {
+        // Filtrer par couleur
+        if ($request->color) {
             $query->where('color_id', $request->color);
         }
 
-        if ($request->filled('search')) {
-            $q = $request->search;
-            $query->where(function ($qf) use ($q) {
-                $qf->where('name', 'like', "%{$q}%")
-                   ->orWhere('description', 'like', "%{$q}%");
+        // Filtrer par recherche
+        if ($request->search) {
+            $query->where(function ($q) use ($request) {
+                $q->where('name', 'like', "%{$request->search}%")
+                  ->orWhere('description', 'like', "%{$request->search}%");
             });
         }
 
-        if ($request->filled('min_price')) {
-            $query->where('price', '>=', (float)$request->min_price);
+        // Filtrer par fourchette de prix
+        if ($request->min_price) {
+            $query->where('price', '>=', $request->min_price);
         }
-        if ($request->filled('max_price')) {
-            $query->where('price', '<=', (float)$request->max_price);
-        }
-
-        // Sorting
-        if ($request->filled('sort')) {
-            switch ($request->sort) {
-                case 'price_asc':
-                    $query->orderBy('price', 'asc');
-                    break;
-                case 'price_desc':
-                    $query->orderBy('price', 'desc');
-                    break;
-                case 'newest':
-                    $query->orderBy('created_at', 'desc');
-                    break;
-                default:
-                    $query->orderBy('id', 'desc');
-            }
-        } else {
-            $query->orderBy('id', 'desc');
+        if ($request->max_price) {
+            $query->where('price', '<=', $request->max_price);
         }
 
-        // Pagination 9 per page
-        $products = $query->paginate(9)->withQueryString();
+        // Trier
+        $sortBy = $request->sort_by ?? 'created_at';
+        $sortOrder = $request->sort_order ?? 'desc';
+        $query->orderBy($sortBy, $sortOrder);
 
-        // Compute discounted_price attribute for frontend
+        // Paginer
+        $products = $query->paginate(12);
+
+        // Transformer pour ajouter les URLs d'images
         $products->getCollection()->transform(function ($product) use ($user) {
-            $product->discounted_price = null;
-            if ($product->promo && $product->promo->active && isset($product->promo->discount)) {
-                $product->discounted_price = round($product->price - ($product->price * $product->promo->discount / 100), 2);
-                $product->discount_percent = $product->promo->discount;
+            // SIMPLE : Juste construire l'URL si image_front existe
+            $imageUrl = $product->image_front 
+                ? "/storage/products/card/{$product->image_front}"
+                : null;
+            
+            $data = [
+                'id' => $product->id,
+                'name' => $product->name,
+                'description' => $product->description,
+                'price' => $product->price,
+                'image_front' => $product->image_front,
+                'image_url' => $imageUrl,
+                'promo' => null,
+            ];
+
+            if ($product->promo && $product->promo->active) {
+                $data['promo'] = [
+                    'id' => $product->promo->id,
+                    'name' => $product->promo->name,
+                    'discount' => $product->promo->discount,
+                    'active' => $product->promo->active,
+                ];
             }
-            // ensure image path is present
-            $product->image_url = $product->image_front ? "/storage/products/card/{$product->image_front}" : '/storage/products/default.png';
-            
-            // Add liked status for current user
-            $product->is_liked_by_user = $user ? $product->likedByUsers()->where('user_id', $user->id)->exists() : false;
-            $product->liked_by_users_count = $product->likedByUsers()->count();
-            
-            return $product;
+
+            $data['isFavorited'] = false;
+            if ($user && method_exists($user, 'favorites')) {
+                $data['isFavorited'] = $user->favorites()->where('product_id', $product->id)->exists();
+            }
+
+            return $data;
         });
 
-        // Récupérer les best sellers (produits les plus populaires ou épinglés)
+        // Best sellers
         $bestSellers = Product::with(['promo'])
             ->where('available', true)
             ->orderBy('isPinned', 'desc')
@@ -87,35 +94,43 @@ class ShopController extends Controller
             ->take(4)
             ->get()
             ->map(function ($product) use ($user) {
+                // SIMPLE : Juste construire l'URL
+                $imageUrl = $product->image_front 
+                    ? "/storage/products/card/{$product->image_front}"
+                    : null;
+                
                 $data = [
                     'id' => $product->id,
                     'name' => $product->name,
                     'price' => $product->price,
                     'image_front' => $product->image_front,
-                    'image_url' => $product->image_front ? "/storage/products/card/{$product->image_front}" : '/storage/products/default.png',
-                    'promo_price' => $product->promo ? $product->promo->discount_amount : null,
-                    'promo_percentage' => $product->promo ? $product->promo->discount_percentage : null,
-                    'is_liked_by_user' => $user ? $product->likedByUsers()->where('user_id', $user->id)->exists() : false,
-                    'liked_by_users_count' => $product->likedByUsers()->count(),
+                    'image_url' => $imageUrl,
+                    'promo' => $product->promo && $product->promo->active ? [
+                        'id' => $product->promo->id,
+                        'name' => $product->promo->name,
+                        'discount' => $product->promo->discount,
+                        'active' => $product->promo->active,
+                    ] : null,
                 ];
                 
-                // Add promo object for consistency
-                if ($product->promo) {
-                    $data['promo'] = $product->promo;
+                $data['isFavorited'] = false;
+                if ($user && method_exists($user, 'favorites')) {
+                    $data['isFavorited'] = $user->favorites()->where('product_id', $product->id)->exists();
                 }
                 
                 return $data;
             });
 
-        $categories = ProductCategory::select('id','name')->get();
-        $colors = Color::select('id','name')->get();
+        // Récupérer les catégories et couleurs pour les filtres
+        $categories = ProductCategory::all();
+        $colors = Color::all();
 
         return Inertia::render('Shop/Shop', [
             'products' => $products,
             'categories' => $categories,
             'colors' => $colors,
-            'filters' => $request->only(['category','color','search','min_price','max_price','sort']),
-            'bestSellers' => $bestSellers
+            'filters' => $request->only(['category', 'color', 'search', 'min_price', 'max_price', 'sort_by', 'sort_order']),
+            'bestSellers' => $bestSellers,
         ]);
     }
 }

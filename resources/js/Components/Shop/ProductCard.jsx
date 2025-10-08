@@ -118,7 +118,22 @@ export default function ProductCard({ product, onUnliked }) {
         });
     };
 
-    const discountedPrice = product.discounted_price;
+    const handleUnlike = async () => {
+        if (onUnliked) {
+            try {
+                await router.delete(`/liked-products/${product.id}`);
+                onUnliked(product.id);
+            } catch (error) {
+                console.error('Failed to unlike product:', error);
+            }
+        }
+    };
+
+    const hasPromo = product.promo && product.promo.active;
+    const originalPrice = parseFloat(product.price);
+    const discountedPrice = hasPromo 
+        ? originalPrice * (1 - product.promo.discount / 100)
+        : null;
 
     return (
         <>
@@ -136,29 +151,38 @@ export default function ProductCard({ product, onUnliked }) {
             <article className="product-card">
                 <Link href={`/products/${product.id}`} className="product-link">
                     <div className="product-thumb">
-                        <img src={product.image_url} alt={product.name}
-                            onError={(e) => { e.target.src = '/storage/products/default.png'; }} />
+                        <img 
+                            src={product.image_url} 
+                            alt={product.name}
+                            loading="lazy"
+                        />
                         
-                        {product.promo && product.promo.active && product.promo.discount && (
-                            <div className="promo-badge">
+                        {hasPromo && (
+                            <div className="badge-promo">
                                 -{product.promo.discount}%
                             </div>
                         )}
 
-                       
+                        {onUnliked && (
+                            <button onClick={handleUnlike} className="unlike-button">
+                                ❤️
+                            </button>
+                        )}
                     </div>
                     <h3 className="product-name">{product.name}</h3>
                 </Link>
 
                 <div className="product-meta">
-                    {discountedPrice ? (
-                        <div className="price">
-                            <span className="original">${product.price}</span>
-                            <span className="discounted">${discountedPrice}</span>
-                        </div>
-                    ) : (
-                        <div className="price"><span>${product.price}</span></div>
-                    )}
+                    <div className="product-price">
+                        {hasPromo ? (
+                            <>
+                                <span className="price-original">${originalPrice.toFixed(2)}</span>
+                                <span className="price-discounted">${discountedPrice.toFixed(2)}</span>
+                            </>
+                        ) : (
+                            <span className="price-current">${originalPrice.toFixed(2)}</span>
+                        )}
+                    </div>
 
                     <div className="product-actions">
                         <button onClick={addToCart} className="btn-add">+ Add to cart</button>

@@ -39,7 +39,7 @@ class ProfileController extends Controller
                     $product->discounted_price = round($product->price - ($product->price * $product->promo->discount / 100), 2);
                     $product->discount_percent = $product->promo->discount;
                 }
-                $product->image_url = $product->image_front ? "/storage/products/card/{$product->image_front}" : '/storage/products/default.png';
+                $product->image_url = $product->image_front ? "/storage/products/card/{$product->image_front}" : 'public/images/placeholder.png';
                 
                 // Add liked status (should be true since it comes from liked products)
                 $product->is_liked_by_user = true;

@@ -48,7 +48,7 @@ export default function AwesomeSection({ products }) {
                                     src={`/storage/products/card/${product.image_front}`} 
                                     alt={product.name}
                                     onError={(e) => {
-                                        e.target.src = '/storage/products/default.png'; 
+                                        e.target.src = 'public/images/placeholder.png'; 
                                     }}
                                 />
                             </div>

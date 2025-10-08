@@ -57,7 +57,6 @@ export default function Footer() {
                 </div>
                 
                 <div className="footer-bottom">
-                    <p>©2020 All rights reserved | This template is made with ❤️ by Colorlib</p>
                     <div className="social-links">
                         <a href="#"><i className="fab fa-facebook-f"></i></a>
                         <a href="#"><i className="fab fa-twitter"></i></a>

@@ -99,17 +99,37 @@ class ProductController extends Controller
             'bonus' => $request->file('image_bonus') ?: $request->input('image_bonus_url'),
         ];
 
-        // Process images
+        // LOG : Avant processProductImages
+        \Log::info('Image data received:', [
+            'front_file' => $request->hasFile('image_front'),
+            'front_url' => $request->input('image_front_url'),
+            'imageData' => $imageData
+        ]);
+
+        // Process images - CORRECTION
         $processedImages = $this->imageService->processProductImages($imageData);
+
+        // LOG : Résultat du traitement des images
+        \Log::info('Processed images result:', $processedImages);
 
         $productData = collect($processedData)->except([
             'width', 'height', 'depth', 'weight', 'quality_checking', 'freshness_duration', 'packaging_date', 'box_content',
             'image_front', 'image_front_url', 'image_left', 'image_left_url', 'image_right', 'image_right_url', 'image_bonus', 'image_bonus_url'
         ])->merge($processedImages)->toArray();
 
+        // LOG : Données finales du produit
+        \Log::info('Final product data:', $productData);
+
         $productDetailData = collect($processedData)->only(['width', 'height', 'depth', 'weight', 'quality_checking', 'freshness_duration', 'packaging_date', 'box_content'])->toArray();
 
         $product = Product::create($productData);
+
+        // Vérifier après création
+        $createdProduct = Product::find($product->id);
+        \Log::info('Created product images:', [
+            'image_front' => $createdProduct->image_front,
+            'image_left' => $createdProduct->image_left,
+        ]);
 
         if (!empty(array_filter($productDetailData))) {
             $productDetailData['product_id'] = $product->id;
@@ -139,7 +159,7 @@ class ProductController extends Controller
             'promo_id' => $product->promo_id,
             // Images avec chemins complets
             'image_front' => $product->image_front,
-            'image_left' => $product->image_left,
+            'image_left' => $product->image_left, 
             'image_right' => $product->image_right,
             'image_bonus' => $product->image_bonus,
             // Détails produit
@@ -214,7 +234,7 @@ class ProductController extends Controller
             'bonus' => $request->file('image_bonus') ?: $request->input('image_bonus_url'),
         ];
 
-        // Process images (pass existing image name for updates)
+        // Process images - CORRECTION  
         $processedImages = $this->imageService->processProductImages($imageData, $product->image_front);
 
         $productData = collect($processedData)->except([
@@ -275,45 +295,50 @@ class ProductController extends Controller
         $product = Product::with(['productCategory', 'color', 'promo', 'productDetail'])
             ->findOrFail($id);
 
-        // Ajouter les URLs des images
-        $product->image_url = $product->image_front ? "/storage/products/show/{$product->image_front}" : null;
-        $product->gallery = array_filter([
+        // SIMPLE : Juste construire les URLs
+        $product->image_url = $product->image_front 
+            ? "/storage/products/show/{$product->image_front}"
+            : null;
+
+        $product->gallery = array_values(array_filter([
             $product->image_front ? "/storage/products/show/{$product->image_front}" : null,
             $product->image_left ? "/storage/products/show/{$product->image_left}" : null,
             $product->image_right ? "/storage/products/show/{$product->image_right}" : null,
             $product->image_bonus ? "/storage/products/show/{$product->image_bonus}" : null,
-        ]);
+        ]));
 
-        // Add liked status for current user
         $product->is_liked_by_user = $user ? $product->likedByUsers()->where('user_id', $user->id)->exists() : false;
         $product->liked_by_users_count = $product->likedByUsers()->count();
 
-        // Calculer les propriétés de promo pour ProductInfo
         if ($product->promo && $product->promo->active && $product->promo->discount) {
             $product->discounted_price = round($product->price * (1 - $product->promo->discount / 100), 2);
             $product->discount_percent = $product->promo->discount;
         }
 
-        // Récupérer les best sellers (produits les plus populaires ou épinglés)
+        // Best sellers
         $bestSellers = Product::with(['promo'])
             ->where('available', true)
-            ->where('id', '!=', $id) // Exclure le produit actuel
+            ->where('id', '!=', $id)
             ->orderBy('isPinned', 'desc')
             ->orderBy('created_at', 'desc')
             ->take(4)
             ->get()
             ->map(function ($product) use ($user) {
+                // SIMPLE : Juste construire l'URL
+                $imageUrl = $product->image_front 
+                    ? "/storage/products/card/{$product->image_front}"
+                    : null;
+                
                 $data = [
                     'id' => $product->id,
                     'name' => $product->name,
                     'price' => $product->price,
                     'image_front' => $product->image_front,
-                    'image_url' => $product->image_front ? "/storage/products/card/{$product->image_front}" : '/storage/products/default.png',
+                    'image_url' => $imageUrl,
                     'is_liked_by_user' => $user ? $product->likedByUsers()->where('user_id', $user->id)->exists() : false,
                     'liked_by_users_count' => $product->likedByUsers()->count(),
                 ];
 
-                // Calcul uniforme des promos pour BestSellers
                 if ($product->promo && $product->promo->active && $product->promo->discount) {
                     $data['discounted_price'] = round($product->price * (1 - $product->promo->discount / 100), 2);
                     $data['discount_percent'] = $product->promo->discount;

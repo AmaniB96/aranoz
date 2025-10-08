@@ -29,10 +29,10 @@ export default function BestSellers({ products = [] }) {
                         >
                             <div className="product-image">
                                 <img 
-                                    src={product.image_front ? `/storage/products/card/${product.image_front}` : '/storage/products/default.png'} 
+                                    src={product.image_front ? `/storage/products/card/${product.image_front}` : 'public/images/placeholder.png'} 
                                     alt={product.name}
                                     onError={(e) => {
-                                        e.target.src = '/storage/products/default.png'; 
+                                        e.target.src = 'public/images/placeholder.png'; 
                                     }}
                                 />
                             </div>

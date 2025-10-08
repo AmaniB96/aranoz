@@ -4,153 +4,239 @@ namespace App\Services;
 
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
-use Intervention\Image\ImageManager;
-use Intervention\Image\Drivers\Gd\Driver;
 use Illuminate\Support\Str;
 
 class ImageService
 {
-    private ImageManager $imageManager;
-
-    private const SIZES = [
-        'card' => ['width' => 300, 'height' => 300],
-        'carousel' => ['width' => 600, 'height' => 400],
-        'panier' => ['width' => 400, 'height' => 400],
-        'show' => ['width' => 800, 'height' => 600],
-    ];
-
-    public function __construct()
+    public function processProductImages($imageData, $existingImageName = null)
     {
-        $this->imageManager = new ImageManager(new Driver());
-    }
+        $processedImages = [];
 
-    /**
-     * Process uploaded images or URLs for a product
-     *
-     * @param array $imageData Array with 'front', 'left', 'right', 'bonus' keys containing UploadedFile or URL strings
-     * @param string|null $existingImageName Base name for existing images (for updates)
-     * @return array Array with image paths for each position and size
-     */
-    public function processProductImages(array $imageData, ?string $existingImageName = null): array
-    {
-        $result = [
-            'image_front' => null,
-            'image_left' => null,
-            'image_right' => null,
-            'image_bonus' => null,
-        ];
+        \Log::info('Processing image data:', $imageData);
 
-        $positions = ['front', 'left', 'right', 'bonus'];
-
-        foreach ($positions as $position) {
-            $input = $imageData[$position] ?? null;
-
-            if ($input instanceof UploadedFile) {
-                // Handle file upload
-                $result["image_{$position}"] = $this->processUploadedFile($input, $position, $existingImageName);
-            } elseif (is_string($input) && !empty($input)) {
-                // Handle URL
-                $result["image_{$position}"] = $this->processImageUrl($input, $position, $existingImageName);
-            } elseif ($existingImageName) {
-                // Keep existing image if no new input provided
-                $result["image_{$position}"] = $existingImageName;
+        foreach ($imageData as $position => $data) {
+            $fieldName = "image_{$position}";
+            
+            \Log::info("Processing {$position}:", ['data' => $data, 'type' => gettype($data)]);
+            
+            if ($data instanceof UploadedFile) {
+                \Log::info("Uploading file for {$position}");
+                $filename = $this->uploadProductImage($data);
+                if ($filename) {
+                    $processedImages[$fieldName] = $filename;
+                    \Log::info("Uploaded {$position} as: {$filename}");
+                } else {
+                    \Log::error("Failed to upload {$position}");
+                    // CRITIQUE : Si c'est image_front, on DOIT avoir une image !
+                    if ($position === 'front') {
+                        throw new \Exception("Failed to upload main product image (image_front). Upload is mandatory.");
+                    }
+                }
+            } elseif (is_string($data) && filter_var($data, FILTER_VALIDATE_URL)) {
+                \Log::info("Downloading URL for {$position}: {$data}");
+                $filename = $this->downloadImageFromUrl($data);
+                if ($filename) {
+                    $processedImages[$fieldName] = $filename;
+                    \Log::info("Downloaded {$position} as: {$filename}");
+                } else {
+                    \Log::error("Failed to download {$position}");
+                    if ($position === 'front') {
+                        throw new \Exception("Failed to download main product image (image_front). Upload is mandatory.");
+                    }
+                }
+            } else {
+                \Log::info("No valid data for {$position}");
             }
         }
 
-        return $result;
-    }
-
-    /**
-     * Process an uploaded file
-     */
-    private function processUploadedFile(UploadedFile $file, string $position, ?string $existingImageName = null): string
-    {
-        // Generate unique filename if not updating existing
-        $imageName = $existingImageName ?: Str::uuid()->toString();
-
-        // Create Intervention Image instance
-        $image = $this->imageManager->read($file);
-
-        // Process each size
-        foreach (self::SIZES as $sizeName => $dimensions) {
-            $resizedImage = clone $image;
-
-            // Resize maintaining aspect ratio
-            $resizedImage->scale($dimensions['width'], $dimensions['height']);
-
-            // Save to storage
-            $path = "products/{$sizeName}/{$imageName}.jpg";
-            Storage::disk('public')->put($path, $resizedImage->toJpeg());
+        // VÉRIFICATION FINALE : image_front DOIT exister
+        if (!isset($processedImages['image_front'])) {
+            throw new \Exception("Main product image (image_front) is required but was not uploaded successfully.");
         }
 
-        return $imageName;
+        \Log::info('Final processed images:', $processedImages);
+        return $processedImages;
     }
 
-    /**
-     * Process an image URL
-     */
-    private function processImageUrl(string $url, string $position, ?string $existingImageName = null): string
+    private function uploadProductImage(UploadedFile $file)
     {
         try {
-            // Generate unique filename if not updating existing
-            $imageName = $existingImageName ?: Str::uuid()->toString();
+            $filename = time() . '_' . Str::random(10) . '.' . $file->getClientOriginalExtension();
+            
+            \Log::info("=== UPLOAD START ===");
+            \Log::info("Filename: {$filename}");
+            \Log::info("Original name: " . $file->getClientOriginalName());
+            \Log::info("Size: " . $file->getSize() . " bytes");
+            \Log::info("Mime type: " . $file->getMimeType());
+            \Log::info("Temp path: " . $file->getRealPath());
+            
+            // MÉTHODE 1 : move() - Plus fiable sur Windows
+            $destinationPath = storage_path('app' . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'products');
+            
+            // Créer le dossier s'il n'existe pas
+            if (!is_dir($destinationPath)) {
+                \Log::info("Creating directory: {$destinationPath}");
+                if (!mkdir($destinationPath, 0755, true)) {
+                    throw new \Exception("Failed to create directory: {$destinationPath}");
+                }
+            }
+            
+            // Vérifier que le dossier est accessible en écriture
+            if (!is_writable($destinationPath)) {
+                throw new \Exception("Directory is not writable: {$destinationPath}");
+            }
+            
+            \Log::info("Moving file to: {$destinationPath}");
+            
+            // Déplacer le fichier
+            $moved = $file->move($destinationPath, $filename);
+            
+            if (!$moved) {
+                throw new \Exception("File move operation failed");
+            }
+            
+            $fullPath = $destinationPath . DIRECTORY_SEPARATOR . $filename;
+            
+            // Vérifier que le fichier existe réellement
+            if (!file_exists($fullPath)) {
+                throw new \Exception("FILE NOT FOUND AFTER MOVE: {$fullPath}");
+            }
+            
+            $fileSize = filesize($fullPath);
+            if ($fileSize === 0) {
+                throw new \Exception("File saved but size is 0 bytes: {$fullPath}");
+            }
+            
+            \Log::info("✅✅✅ FILE SAVED SUCCESSFULLY: {$fullPath}");
+            \Log::info("✅ File size: {$fileSize} bytes");
+            
+            // Copier vers les sous-dossiers
+            $this->copyToSubFolders($filename);
+            
+            \Log::info("=== UPLOAD END ===");
+            
+            return $filename;
+            
+        } catch (\Exception $e) {
+            \Log::error('❌❌❌ UPLOAD FAILED: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            throw $e; // RELANCER l'exception pour stopper la création du produit
+        }
+    }
 
-            // Create Intervention Image instance from URL
-            $image = $this->imageManager->read($url);
-
-            // Process each size
-            foreach (self::SIZES as $sizeName => $dimensions) {
-                $resizedImage = clone $image;
-
-                // Resize maintaining aspect ratio
-                $resizedImage->scale($dimensions['width'], $dimensions['height']);
-
-                // Save to storage
-                $path = "products/{$sizeName}/{$imageName}.jpg";
-                Storage::disk('public')->put($path, $resizedImage->toJpeg());
+    private function downloadImageFromUrl($url)
+    {
+        try {
+            \Log::info("Downloading image from URL: {$url}");
+            
+            $imageContent = file_get_contents($url);
+            if ($imageContent === false) {
+                throw new \Exception("Failed to download image from URL");
             }
 
-            return $imageName;
+            $extension = pathinfo(parse_url($url, PHP_URL_PATH), PATHINFO_EXTENSION);
+            if (!$extension) {
+                $extension = 'jpg';
+            }
+
+            $filename = time() . '_' . Str::random(10) . '.' . $extension;
+            $destinationPath = storage_path('app' . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'products');
+            
+            if (!is_dir($destinationPath)) {
+                mkdir($destinationPath, 0755, true);
+            }
+            
+            $fullPath = $destinationPath . DIRECTORY_SEPARATOR . $filename;
+            
+            if (file_put_contents($fullPath, $imageContent) === false) {
+                throw new \Exception("Failed to save downloaded image");
+            }
+            
+            if (!file_exists($fullPath) || filesize($fullPath) === 0) {
+                throw new \Exception("Downloaded image file is invalid");
+            }
+            
+            \Log::info("✅ Image downloaded successfully: {$fullPath}");
+            
+            $this->copyToSubFolders($filename);
+            
+            return $filename;
+            
         } catch (\Exception $e) {
-            // If URL processing fails, return the URL as-is for backward compatibility
-            return $url;
+            \Log::error('Failed to download image from URL: ' . $url, ['error' => $e->getMessage()]);
+            throw $e;
         }
     }
 
-    /**
-     * Delete product images
-     */
-    public function deleteProductImages(string $imageName): void
+    private function copyToSubFolders($filename)
     {
-        foreach (self::SIZES as $sizeName => $dimensions) {
-            $path = "products/{$sizeName}/{$imageName}.jpg";
-            Storage::disk('public')->delete($path);
+        $sourcePath = storage_path("app" . DIRECTORY_SEPARATOR . "public" . DIRECTORY_SEPARATOR . "products" . DIRECTORY_SEPARATOR . $filename);
+        
+        \Log::info("Copying image from: {$sourcePath}");
+        
+        if (!file_exists($sourcePath)) {
+            throw new \Exception("Source image NOT FOUND for copy: {$sourcePath}");
+        }
+        
+        $sourceSize = filesize($sourcePath);
+        \Log::info("Source image size: {$sourceSize} bytes");
+        
+        $subFolders = ['card', 'show', 'carousel', 'panier'];
+        
+        foreach ($subFolders as $folder) {
+            $targetDir = storage_path("app" . DIRECTORY_SEPARATOR . "public" . DIRECTORY_SEPARATOR . "products" . DIRECTORY_SEPARATOR . $folder);
+            $targetPath = $targetDir . DIRECTORY_SEPARATOR . $filename;
+            
+            // Créer le dossier s'il n'existe pas
+            if (!is_dir($targetDir)) {
+                \Log::info("Creating directory: {$targetDir}");
+                if (!mkdir($targetDir, 0755, true)) {
+                    throw new \Exception("Failed to create directory: {$targetDir}");
+                }
+            }
+            
+            // Copier le fichier
+            if (!copy($sourcePath, $targetPath)) {
+                throw new \Exception("Failed to copy image to: {$targetPath}");
+            }
+            
+            // Vérifier la copie
+            if (!file_exists($targetPath)) {
+                throw new \Exception("Copy succeeded but file not found: {$targetPath}");
+            }
+            
+            $targetSize = filesize($targetPath);
+            if ($targetSize !== $sourceSize) {
+                throw new \Exception("Copied file size mismatch: {$targetPath} (expected {$sourceSize}, got {$targetSize})");
+            }
+            
+            \Log::info("✅✅ Successfully copied to: {$targetPath} ({$targetSize} bytes)");
         }
     }
 
-    /**
-     * Get image URL for specific size and position
-     */
-    public static function getImageUrl(string $imageName, string $size, string $position = 'front'): string
+    public function deleteProductImages($filename)
     {
-        if (filter_var($imageName, FILTER_VALIDATE_URL)) {
-            // If it's already a URL, return as-is
-            return $imageName;
-        }
+        if (!$filename) return;
 
-        return asset("storage/products/{$size}/{$imageName}.jpg");
+        $paths = [
+            "public/products/{$filename}",
+            "public/products/card/{$filename}",
+            "public/products/carousel/{$filename}",
+            "public/products/panier/{$filename}",
+            "public/products/show/{$filename}"
+        ];
+
+        foreach ($paths as $path) {
+            if (Storage::exists($path)) {
+                Storage::delete($path);
+            }
+        }
     }
 
-    /**
-     * Check if image exists for specific size
-     */
-    public static function imageExists(string $imageName, string $size): bool
+    public function verifyImageAccess($filename, $folder = 'card')
     {
-        if (filter_var($imageName, FILTER_VALIDATE_URL)) {
-            return true; // URLs are considered to exist
-        }
-
-        $path = "products/{$size}/{$imageName}.jpg";
-        return Storage::disk('public')->exists($path);
+        if (!$filename) return false;
+        $path = storage_path("app" . DIRECTORY_SEPARATOR . "public" . DIRECTORY_SEPARATOR . "products" . DIRECTORY_SEPARATOR . $folder . DIRECTORY_SEPARATOR . $filename);
+        return file_exists($path);
     }
 }

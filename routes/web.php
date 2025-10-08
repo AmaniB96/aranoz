@@ -13,7 +13,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PromoController;
 use App\Http\Controllers\MailController;
 use App\Http\Controllers\WelcomeController;
-use App\Http\Controllers\MainController; // AJOUT
+use App\Http\Controllers\MainController;
 use App\Http\Controllers\ShopProductController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\LikedProductController;
@@ -21,6 +21,44 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+// ========================================
+// ROUTES DE SERVICE D'IMAGES (EN PREMIER !)
+// ========================================
+Route::get('/storage/products/{folder}/{filename}', function ($folder, $filename) {
+    $allowedFolders = ['card', 'show', 'carousel', 'panier'];
+    
+    if (!in_array($folder, $allowedFolders)) {
+        abort(404);
+    }
+    
+    $path = storage_path("app/public/products/{$folder}/{$filename}");
+    
+    if (!file_exists($path)) {
+        abort(404);
+    }
+    
+    return response()->file($path, [
+        'Content-Type' => mime_content_type($path),
+        'Cache-Control' => 'public, max-age=31536000',
+    ]);
+})->where('filename', '.*');
+
+Route::get('/storage/blog/{filename}', function ($filename) {
+    $path = storage_path("app/public/blog/{$filename}");
+    
+    if (!file_exists($path)) {
+        abort(404);
+    }
+    
+    return response()->file($path, [
+        'Content-Type' => mime_content_type($path),
+        'Cache-Control' => 'public, max-age=31536000',
+    ]);
+})->where('filename', '.*');
+
+// ========================================
+// ROUTES PUBLIQUES
+// ========================================
 Route::get('/', [WelcomeController::class, 'index']);
 
 Route::get('/dashboard', function () {
@@ -159,5 +197,36 @@ Route::post('/contact/send-message', [ContactController::class, 'sendMessage'])-
 
 // API route for coupon validation
 Route::post('/api/coupons/validate', [CouponController::class, 'validateCoupon'])->name('api.coupons.validate');
+
+// Ajouter après les routes storage
+
+Route::get('/debug/upload-test', function () {
+    // Simuler un upload
+    $testFilename = '1759913668_SobwytISFu.png';
+    
+    $paths = [
+        'source' => storage_path("app/public/products/{$testFilename}"),
+        'card' => storage_path("app/public/products/card/{$testFilename}"),
+        'show' => storage_path("app/public/products/show/{$testFilename}"),
+        'carousel' => storage_path("app/public/products/carousel/{$testFilename}"),
+        'panier' => storage_path("app/public/products/panier/{$testFilename}"),
+    ];
+    
+    $results = [];
+    foreach ($paths as $name => $path) {
+        $results[$name] = [
+            'path' => $path,
+            'exists' => file_exists($path),
+            'readable' => file_exists($path) && is_readable($path),
+            'size' => file_exists($path) ? filesize($path) : null,
+        ];
+    }
+    
+    return [
+        'test_filename' => $testFilename,
+        'paths' => $results,
+        'latest_logs' => array_slice(file(storage_path('logs/laravel.log')), -50),
+    ];
+});
 
 require __DIR__.'/auth.php';

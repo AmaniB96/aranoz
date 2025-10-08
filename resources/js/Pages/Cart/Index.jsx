@@ -115,7 +115,6 @@ export default function Index() {
         }
     };
 
-    // Fonction pour appliquer un coupon
     const applyCoupon = async () => {
         if (!couponCode.trim()) {
             setCouponError('Please enter a coupon code');
@@ -161,7 +160,6 @@ export default function Index() {
         }
     };
 
-    // Fonction pour retirer le coupon
     const removeCoupon = async () => {
         setIsApplyingCoupon(true);
 
@@ -248,7 +246,7 @@ export default function Index() {
                         {items.map(it => (
                             <div key={it.id} className="cart-row">
                                 <div className="col product">
-                                    <img src={it.image} alt={it.name} onError={e => e.target.src = '/storage/products/default.png'} />
+                                    <img src={it.image} alt={it.name} onError={e => e.target.src = 'public/images/placeholder.png'} />
                                     <div className="product-meta">
                                         <Link href={`/products/${it.product_id}`}>{it.name}</Link>
                                     </div>
@@ -315,9 +313,7 @@ export default function Index() {
                     )}
 
                     <div className="cart-footer">
-                        <div className="continue">
-                            <Link href="/shop" className="btn-secondary">Continue Shopping</Link>
-                        </div>
+                     
 
                         <div className="summary">
                             <div className="subtotal">
